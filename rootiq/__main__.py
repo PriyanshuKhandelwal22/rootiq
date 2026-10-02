@@ -5,13 +5,14 @@ from pathlib import Path
 from rootiq.collector.runner import run_tests
 from rootiq.fingerprint.signatures import group_failures, make_fingerprint
 from rootiq.parser.normalizer import normalize_failure
+from rootiq.rca.correlate import correlate, load_observations
 from rootiq.rca.flaky import MIN_OBSERVATIONS, classify, load_history
 from rootiq.rca.rules import diagnose
 from rootiq.storage.history import history_for, save_run
 
 
-def cmd_run() -> None:
-    rec = run_tests()
+def cmd_run(stress: bool = False) -> None:
+    rec = run_tests(stress=stress)
     s = rec["summary"]
     print(f"{rec['run_id']} saved to runs\\{rec['run_id']}.json")
     print(f"exit_code={rec['exit_code']}  duration={rec['duration_sec']}s")
@@ -21,6 +22,7 @@ def cmd_run() -> None:
     print(f"cpu avg/max = {m['cpu_avg']}%/{m['cpu_max']}%   "
           f"mem avg/max = {m['mem_avg']}%/{m['mem_max']}%   "
           f"({m['sample_count']} samples)")
+    print(f"stress={'ON' if rec['stress'] else 'off'}")
     for t in rec["tests"]:
         if t["status"] != "passed":
             print(f"  [{t['status'].upper()}] {t['name']}: {t['message']}")
@@ -79,21 +81,44 @@ def cmd_flaky() -> None:
     print(f"\n{stable} test(s) stable_pass (not shown)")
 
 
+def cmd_correlate() -> None:
+    obs, run_cpu = load_observations()
+    calm = [c for s, c in run_cpu if not s]
+    loaded = [c for s, c in run_cpu if s]
+    print(f"Runs with metrics: {len(calm)} calm, {len(loaded)} under stress")
+    if calm and loaded:
+        print(f"Mean CPU: calm {sum(calm)/len(calm):.1f}%  vs  "
+              f"stress {sum(loaded)/len(loaded):.1f}%")
+    results = correlate(obs)
+    if not results:
+        print("\nNo test has enough mixed-outcome data yet "
+              "(need 5+ calm and 5+ stress runs).")
+        return
+    for r in results:
+        print(f"\n{r['verdict'].upper():<15} {r['test_id']}")
+        print(f"  calm  : {r['calm_fail_rate']:.0%} failed over {r['calm_runs']} runs")
+        print(f"  stress: {r['loaded_fail_rate']:.0%} failed over {r['loaded_runs']} runs")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="rootiq")
     sub = parser.add_subparsers(dest="command", required=True)
-    sub.add_parser("run", help="Run the pytest suite and save evidence")
+    r = sub.add_parser("run", help="Run the pytest suite and save evidence")
+    r.add_argument("--stress", action="store_true", help="Burn CPU during the run")
     a = sub.add_parser("analyze", help="Analyze a saved run")
     a.add_argument("run_id")
     sub.add_parser("flaky", help="Detect flaky tests from run history")
+    sub.add_parser("correlate", help="Check whether failures line up with CPU load")
     args = parser.parse_args()
 
     if args.command == "run":
-        cmd_run()
+        cmd_run(args.stress)
     elif args.command == "analyze":
         cmd_analyze(args.run_id)
     elif args.command == "flaky":
         cmd_flaky()
+    elif args.command == "correlate":
+        cmd_correlate()
 
 
 if __name__ == "__main__":

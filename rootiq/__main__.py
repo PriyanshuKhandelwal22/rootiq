@@ -17,6 +17,10 @@ def cmd_run() -> None:
     print(f"exit_code={rec['exit_code']}  duration={rec['duration_sec']}s")
     print(f"{s['passed']} passed, {s['failed']} failed, "
           f"{s['error']} errors, {s['skipped']} skipped")
+    m = rec["metrics"]
+    print(f"cpu avg/max = {m['cpu_avg']}%/{m['cpu_max']}%   "
+          f"mem avg/max = {m['mem_avg']}%/{m['mem_max']}%   "
+          f"({m['sample_count']} samples)")
     for t in rec["tests"]:
         if t["status"] != "passed":
             print(f"  [{t['status'].upper()}] {t['name']}: {t['message']}")

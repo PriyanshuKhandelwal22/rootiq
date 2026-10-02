@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from rootiq.collector.junit import parse_junit
+from rootiq.collector.metrics import MetricsSampler
 
 RUNS_DIR = Path("runs")
 
@@ -28,12 +29,15 @@ def run_tests(pytest_args: list[str] | None = None) -> dict:
     cmd = [sys.executable, "-m", "pytest", f"--junitxml={junit_path}",
            *(pytest_args or [])]
 
+    sampler = MetricsSampler()
     started_at = datetime.now(timezone.utc).isoformat()
+    sampler.start()
     start = time.perf_counter()
     proc = subprocess.run(
         cmd, capture_output=True, text=True, encoding="utf-8", errors="replace"
     )
     duration = time.perf_counter() - start
+    metrics = sampler.stop()
 
     tests = parse_junit(junit_path)
     summary = {
@@ -51,6 +55,7 @@ def run_tests(pytest_args: list[str] | None = None) -> dict:
         "exit_code": proc.returncode,
         "duration_sec": round(duration, 3),
         "summary": summary,
+        "metrics": metrics,
         "tests": tests,
         "stdout": proc.stdout,
         "stderr": proc.stderr,

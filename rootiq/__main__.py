@@ -5,6 +5,8 @@ from pathlib import Path
 from rootiq.collector.runner import run_tests
 from rootiq.parser.normalizer import normalize_failure
 from rootiq.fingerprint.signatures import make_fingerprint, group_failures
+from rootiq.rca.rules import diagnose
+from rootiq.storage.history import save_run, history_for
 
 def cmd_run() -> None:
     rec = run_tests()
@@ -33,13 +35,24 @@ def cmd_analyze(run_id: str) -> None:
         failures.append(f)
 
     groups = group_failures(failures)
+    diagnoses = {fp: diagnose(items) for fp, items in groups.items()}
+
     print(f"{run_id}: {len(failures)} failure(s) in {len(groups)} group(s)")
     for fp, items in groups.items():
-        first = items[0]
-        print(f"\n[{fp}] x{len(items)}  {first['error_type']}")
-        print(f"  template : {first['template']}")
-        for f in items:
-            print(f"  - {f['test_id']}")
+        d = diagnoses[fp]
+        h = history_for(fp, exclude_run=run_id)
+        print(f"\n[{fp}] x{len(items)}  {items[0]['error_type']}")
+        print(f"  root_cause : {d['root_cause']}  (confidence {d['confidence']:.2f}, rule {d['rule_id']})")
+        if h["runs_seen"]:
+            print(f"  history    : seen in {h['runs_seen']} earlier run(s) "
+                  f"({h['first_seen']} to {h['last_seen']})")
+        else:
+            print("  history    : new failure, not seen before")
+        print(f"  next_tests : {'; '.join(d['next_tests'])}")
+        for t in d["affected_tests"]:
+            print(f"    - {t}")
+
+    save_run(rec, failures, diagnoses)
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="rootiq")

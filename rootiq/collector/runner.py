@@ -1,4 +1,5 @@
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -8,6 +9,7 @@ from pathlib import Path
 
 from rootiq.collector.junit import parse_junit
 from rootiq.collector.metrics import MetricsSampler
+from rootiq.collector.netprobe import read_evidence
 from rootiq.collector.stress import CpuStress
 
 RUNS_DIR = Path("runs")
@@ -27,6 +29,8 @@ def next_run_id() -> str:
 def run_tests(pytest_args: list[str] | None = None, stress: bool = False) -> dict:
     run_id = next_run_id()
     junit_path = RUNS_DIR / f"{run_id}.junit.xml"
+    evidence_path = RUNS_DIR / f"{run_id}.evidence.jsonl"
+    env = {**os.environ, "ROOTIQ_EVIDENCE_FILE": str(evidence_path)}
     cmd = [sys.executable, "-m", "pytest", f"--junitxml={junit_path}",
            *(pytest_args or [])]
 
@@ -40,7 +44,8 @@ def run_tests(pytest_args: list[str] | None = None, stress: bool = False) -> dic
         sampler.start()
         start = time.perf_counter()
         proc = subprocess.run(
-            cmd, capture_output=True, text=True, encoding="utf-8", errors="replace"
+            cmd, capture_output=True, text=True, encoding="utf-8",
+            errors="replace", env=env
         )
         duration = time.perf_counter() - start
         metrics = sampler.stop()
@@ -49,6 +54,7 @@ def run_tests(pytest_args: list[str] | None = None, stress: bool = False) -> dic
             stressor.stop()
 
     tests = parse_junit(junit_path)
+    evidence = read_evidence(evidence_path)
     summary = {
         "total": len(tests),
         "passed": sum(t["status"] == "passed" for t in tests),
@@ -67,6 +73,7 @@ def run_tests(pytest_args: list[str] | None = None, stress: bool = False) -> dic
         "summary": summary,
         "metrics": metrics,
         "tests": tests,
+        "evidence": evidence,
         "stdout": proc.stdout,
         "stderr": proc.stderr,
         "environment": {

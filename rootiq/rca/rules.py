@@ -101,3 +101,72 @@ def diagnose(group: list[dict]) -> dict:
         "alternatives": [],
         "next_tests": ["collect more evidence (logs, metrics, packet capture)"],
     }
+
+
+def _describe(e: dict) -> str:
+    return (f"{e['id']}: {e['phase']} to {e['host']}:{e['port']} -> "
+            f"{e['outcome']} after {e['elapsed_ms']} ms")
+
+
+def diagnose_with_evidence(group: list[dict], evidence: list[dict]) -> dict:
+    """Prefer observed socket outcomes over error-message matching."""
+    d = diagnose(group)
+    ids = {f["test_id"] for f in group}
+    socks = [e for e in evidence
+             if e.get("type") == "socket" and e.get("test_id") in ids]
+    if not socks:
+        return d  # no observations, so fall back to the string rules
+
+    def pick(phase, outcome):
+        return [e for e in socks if e["phase"] == phase and e["outcome"] == outcome]
+
+    refused = pick("connect", "refused")
+    conn_timeout = pick("connect", "timeout")
+    dns = [e for e in socks if e["outcome"] == "dns_error"]
+    connect_ok = pick("connect", "ok")
+    read_timeout = [
+        e for e in pick("read", "timeout")
+        if any(c["test_id"] == e["test_id"] and c["port"] == e["port"]
+               for c in connect_ok)
+    ]
+
+    if refused:
+        used, rule = refused, {
+            "id": "E01", "root_cause": "service_down", "confidence": 0.85,
+            "alternatives": ["wrong port in test configuration",
+                             "firewall actively rejecting (REJECT rule)"],
+            "next_tests": ["check the service process is running",
+                           f"netstat -ano | findstr :{refused[0]['port']}"]}
+    elif read_timeout:
+        used = [c for c in connect_ok
+                if c["test_id"] == read_timeout[0]["test_id"]] + read_timeout
+        rule = {
+            "id": "E02", "root_cause": "service_unresponsive", "confidence": 0.80,
+            "alternatives": ["application hung or deadlocked",
+                             "client timeout shorter than normal response time",
+                             "server overloaded"],
+            "next_tests": ["inspect server logs for the same time window",
+                           "retry with a longer read timeout"]}
+    elif conn_timeout:
+        used, rule = conn_timeout, {
+            "id": "E03", "root_cause": "network_path_or_firewall", "confidence": 0.65,
+            "alternatives": ["destination host down", "routing problem"],
+            "next_tests": ["capture packets and look for SYN without SYN-ACK",
+                           "ping the destination"]}
+    elif dns:
+        used, rule = dns, {
+            "id": "E04", "root_cause": "dns_failure", "confidence": 0.85,
+            "alternatives": ["typo in hostname", "resolver unreachable"],
+            "next_tests": ["nslookup the hostname", "check DNS server settings"]}
+    else:
+        return d
+
+    d["string_rule_said"] = d["root_cause"]
+    d["root_cause"] = rule["root_cause"]
+    d["confidence"] = rule["confidence"]
+    d["rule_id"] = rule["id"]
+    d["alternatives"] = rule["alternatives"]
+    d["next_tests"] = rule["next_tests"]
+    d["evidence"] = d["evidence"] + [_describe(e) for e in used]
+    d["evidence_ids"] = [e["id"] for e in used]
+    return d

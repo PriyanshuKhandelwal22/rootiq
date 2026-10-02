@@ -7,7 +7,7 @@ from rootiq.fingerprint.signatures import group_failures, make_fingerprint
 from rootiq.parser.normalizer import normalize_failure
 from rootiq.rca.correlate import correlate, load_observations
 from rootiq.rca.flaky import MIN_OBSERVATIONS, classify, load_history
-from rootiq.rca.rules import diagnose
+from rootiq.rca.rules import diagnose_with_evidence
 from rootiq.storage.history import history_for, save_run
 
 
@@ -34,8 +34,11 @@ def cmd_analyze(run_id: str) -> None:
         print(f"{path} not found")
         return
     rec = json.loads(path.read_text(encoding="utf-8"))
-    raw = [t for t in rec["tests"] if t["status"] in ("failed", "error")]
+    evidence = rec.get("evidence", [])
+    for i, e in enumerate(evidence, 1):
+        e["id"] = f"EV{i}"  # stable: position in this run's evidence list
 
+    raw = [t for t in rec["tests"] if t["status"] in ("failed", "error")]
     failures = []
     for t in raw:
         f = normalize_failure(t)
@@ -43,7 +46,8 @@ def cmd_analyze(run_id: str) -> None:
         failures.append(f)
 
     groups = group_failures(failures)
-    diagnoses = {fp: diagnose(items) for fp, items in groups.items()}
+    diagnoses = {fp: diagnose_with_evidence(items, evidence)
+                 for fp, items in groups.items()}
 
     print(f"{run_id}: {len(failures)} failure(s) in {len(groups)} group(s)")
     for fp, items in groups.items():
@@ -51,14 +55,19 @@ def cmd_analyze(run_id: str) -> None:
         h = history_for(fp, exclude_run=run_id)
         print(f"\n[{fp}] x{len(items)}  {items[0]['error_type']}")
         print(f"  root_cause : {d['root_cause']}  (confidence {d['confidence']:.2f}, rule {d['rule_id']})")
+        if d.get("string_rule_said"):
+            print(f"  string rule: said {d['string_rule_said']}, overridden by observed evidence")
         if h["runs_seen"]:
             print(f"  history    : seen in {h['runs_seen']} earlier run(s) "
                   f"({h['first_seen']} to {h['last_seen']})")
         else:
             print("  history    : new failure, not seen before")
+        print("  evidence   :")
+        for line in d["evidence"]:
+            print(f"    - {line}")
         print(f"  next_tests : {'; '.join(d['next_tests'])}")
         for t in d["affected_tests"]:
-            print(f"    - {t}")
+            print(f"    affects: {t}")
 
     save_run(rec, failures, diagnoses)
 

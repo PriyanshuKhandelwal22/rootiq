@@ -6,6 +6,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from rootiq.collector.junit import parse_junit
+
 RUNS_DIR = Path("runs")
 
 
@@ -22,7 +24,9 @@ def next_run_id() -> str:
 
 def run_tests(pytest_args: list[str] | None = None) -> dict:
     run_id = next_run_id()
-    cmd = [sys.executable, "-m", "pytest", *(pytest_args or [])]
+    junit_path = RUNS_DIR / f"{run_id}.junit.xml"
+    cmd = [sys.executable, "-m", "pytest", f"--junitxml={junit_path}",
+           *(pytest_args or [])]
 
     started_at = datetime.now(timezone.utc).isoformat()
     start = time.perf_counter()
@@ -31,12 +35,23 @@ def run_tests(pytest_args: list[str] | None = None) -> dict:
     )
     duration = time.perf_counter() - start
 
+    tests = parse_junit(junit_path)
+    summary = {
+        "total": len(tests),
+        "passed": sum(t["status"] == "passed" for t in tests),
+        "failed": sum(t["status"] == "failed" for t in tests),
+        "error": sum(t["status"] == "error" for t in tests),
+        "skipped": sum(t["status"] == "skipped" for t in tests),
+    }
+
     record = {
         "run_id": run_id,
         "timestamp": started_at,
         "command": cmd,
         "exit_code": proc.returncode,
         "duration_sec": round(duration, 3),
+        "summary": summary,
+        "tests": tests,
         "stdout": proc.stdout,
         "stderr": proc.stderr,
         "environment": {

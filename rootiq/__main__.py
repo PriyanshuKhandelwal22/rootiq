@@ -4,7 +4,7 @@ from pathlib import Path
 
 from rootiq.collector.runner import run_tests
 from rootiq.parser.normalizer import normalize_failure
-
+from rootiq.fingerprint.signatures import make_fingerprint, group_failures
 
 def cmd_run() -> None:
     rec = run_tests()
@@ -24,16 +24,22 @@ def cmd_analyze(run_id: str) -> None:
         print(f"{path} not found")
         return
     rec = json.loads(path.read_text(encoding="utf-8"))
-    failures = [t for t in rec["tests"] if t["status"] in ("failed", "error")]
-    print(f"{run_id}: {len(failures)} failure(s)")
-    for t in failures:
-        f = normalize_failure(t)
-        frame = f["top_frame"]
-        print(f"\n{f['test_id']}")
-        print(f"  error_type : {f['error_type']}")
-        print(f"  template   : {f['template']}")
-        print(f"  top_frame  : {frame['file']}:{frame['line']}")
+    raw = [t for t in rec["tests"] if t["status"] in ("failed", "error")]
 
+    failures = []
+    for t in raw:
+        f = normalize_failure(t)
+        f["fingerprint"] = make_fingerprint(f)
+        failures.append(f)
+
+    groups = group_failures(failures)
+    print(f"{run_id}: {len(failures)} failure(s) in {len(groups)} group(s)")
+    for fp, items in groups.items():
+        first = items[0]
+        print(f"\n[{fp}] x{len(items)}  {first['error_type']}")
+        print(f"  template : {first['template']}")
+        for f in items:
+            print(f"  - {f['test_id']}")
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="rootiq")

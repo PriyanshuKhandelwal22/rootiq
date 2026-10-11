@@ -29,11 +29,9 @@ def diagnose_run(rec: dict, use_evidence: bool) -> dict[str, dict]:
             failures.append(f)
 
     out = {}
-    for items in group_failures(failures).values():
-        d = (diagnose_with_evidence(items, evidence, flows)
-             if use_evidence else diagnose(items))
-        for f in items:
-            out[f["test_id"]] = d
+    for f in failures:
+        out[f["test_id"]] = (diagnose_with_evidence([f], evidence, flows)
+                             if use_evidence else diagnose([f]))
     return out
 
 

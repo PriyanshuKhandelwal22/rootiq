@@ -41,7 +41,7 @@ def save_run(rec: dict, failures: list[dict], diagnoses: dict) -> None:
             (rec["run_id"], rec["timestamp"], rec["exit_code"]),
         )
         for f in failures:
-            d = diagnoses[f["fingerprint"]]
+            d = diagnoses[f["test_id"]]
             conn.execute(
                 "INSERT OR REPLACE INTO failures "
                 "(run_id, test_id, fingerprint, error_type, template, "

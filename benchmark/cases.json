@@ -8,5 +8,8 @@
   "tests.test_network::test_timeout_host_b": {"truth": "network_path_or_service_unavailable", "kind": "simulated"},
   "tests.test_network::test_connection_refused": {"truth": "service_down", "kind": "simulated"},
   "tests.test_network::test_malformed_json_a": {"truth": "input_validation", "kind": "simulated"},
-  "tests.test_network::test_malformed_json_b": {"truth": "input_validation", "kind": "simulated"}
+  "tests.test_network::test_malformed_json_b": {"truth": "input_validation", "kind": "simulated"},
+  "tests.test_heldout::test_http_500_stack_trace": {"truth": "application_defect", "kind": "heldout"},
+  "tests.test_heldout::test_partial_response": {"truth": "truncated_response", "kind": "heldout"},
+  "tests.test_heldout::test_connection_reset_midstream": {"truth": "connection_reset", "kind": "heldout"}
 }

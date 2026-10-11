@@ -2,8 +2,79 @@ import socket
 import threading
 
 import pytest
+import struct
+import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+class _Handler(BaseHTTPRequestHandler):
+    def log_message(self, *args):
+        pass  # keep pytest output clean
+
+    def do_GET(self):
+        if self.path == "/error500":
+            body = (b'Traceback (most recent call last):\n'
+                    b'  File "app/handlers.py", line 42, in get_user\n'
+                    b'    return users[user_id]\n'
+                    b'KeyError: 42\n')
+            self.send_response(500)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        elif self.path == "/partial":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", "100")  # promises 100 bytes
+            self.end_headers()
+            self.wfile.write(b'{"items": [1, 2, 3')  # sends only 18, then closes
+        elif self.path == "/slow":
+            time.sleep(1)
+            body = b"ok"
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
 
 
+@pytest.fixture
+def http_server():
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
+    srv.daemon_threads = True
+    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t.start()
+    yield f"http://127.0.0.1:{srv.server_address[1]}"
+    srv.shutdown()
+    srv.server_close()
+
+
+@pytest.fixture
+def reset_server():
+    """Accepts a connection, then aborts it with a TCP RST."""
+    srv = socket.socket()
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(5)
+    srv.settimeout(0.2)
+    stop = threading.Event()
+
+    def loop():
+        while not stop.is_set():
+            try:
+                conn = srv.accept()[0]
+            except OSError:
+                continue
+            # SO_LINGER with timeout 0 makes close() send RST instead of FIN
+            conn.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER,
+                            struct.pack("ii", 1, 0))
+            conn.close()
+
+    t = threading.Thread(target=loop, daemon=True)
+    t.start()
+    yield "127.0.0.1", srv.getsockname()[1]
+    stop.set()
+    t.join()
+    srv.close()
+
+
+    
 @pytest.fixture
 def listening_server():
     """A real TCP server that accepts connections but never replies."""

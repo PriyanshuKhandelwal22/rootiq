@@ -33,6 +33,9 @@ def observed_http_get(url: str, timeout: float = 3.0) -> bytes:
         rec.update(outcome="incomplete_read", bytes_received=len(e.partial),
                    bytes_expected=len(e.partial) + (e.expected or 0))
         raise
+    except http.client.RemoteDisconnected:
+        rec["outcome"] = "RemoteDisconnected"
+        raise
     except ConnectionResetError:
         rec["outcome"] = "reset"
         raise
@@ -86,9 +89,6 @@ def observe_socket(host: str, port: int, phase: str):
         raise
     except ConnectionResetError as e:
         outcome, detail = "reset", str(e)
-        raise
-    except TimeoutError:
-        rec["outcome"] = "timeout"
         raise
     except OSError as e:
         outcome, detail = "os_error", str(e)

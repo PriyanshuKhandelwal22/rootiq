@@ -133,12 +133,25 @@ def _http_rule(http_ev: list[dict]) -> tuple[dict, list[dict]] | None:
                      "alternatives": ["server overloaded", "client timeout too short"],
                      "next_tests": ["inspect server logs for the same window",
                                     "retry with a longer timeout"]}, [e])
+        if e["outcome"] == "RemoteDisconnected":
+            return ({"id": "E13", "root_cause": "connection_closed_early",
+                     "confidence": 0.75,
+                     "alternatives": ["server crashed while handling the request",
+                                      "proxy dropped the connection", "keep-alive timeout"],
+                     "next_tests": ["check server logs for a crash at that time",
+                                    "retry the request on a fresh connection"]}, [e])
         if e["outcome"] == "http_error" and 400 <= status < 500:
-            return ({"id": "E09", "root_cause": "resource_not_found" if status == 404
-                     else "client_request_error",
-                     "confidence": 0.80 if status == 404 else 0.60,
-                     "alternatives": ["wrong URL in the test", "resource deleted"],
-                     "next_tests": ["verify the URL and resource exist",
+            by_status = {
+                404: ("resource_not_found", 0.80, "E09"),
+                401: ("authentication_failure", 0.80, "E11"),
+                403: ("authentication_failure", 0.65, "E11"),
+                429: ("rate_limited", 0.85, "E12"),
+            }
+            cause, conf, rid = by_status.get(status, ("client_request_error", 0.60, "E09"))
+            return ({"id": rid, "root_cause": cause, "confidence": conf,
+                     "alternatives": ["wrong URL or credentials in the test",
+                                      "test environment misconfigured"],
+                     "next_tests": ["verify the URL, token and permissions",
                                     "check API version or routing"]}, [e])
         if e["outcome"] == "http_error" and status >= 500:
             if "Traceback" in body:

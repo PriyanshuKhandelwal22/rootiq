@@ -10,6 +10,7 @@ from rootiq.rca.flaky import MIN_OBSERVATIONS, classify, load_history
 from rootiq.rca.rules import diagnose_with_evidence
 from rootiq.storage.history import history_for, save_run
 from rootiq.rca.benchmark import load_cases, score, summarize
+from rootiq.rca.retrieval import find_similar
 
 
 def cmd_run(stress: bool = False) -> None:
@@ -143,6 +144,25 @@ def cmd_benchmark(run_id: str) -> None:
                       f"got={r['pred']} ({r['confidence']:.2f})")
         print()
 
+def cmd_similar(query: str, k: int) -> None:
+    me, hits = find_similar(query, k)
+    if me is None:
+        print(f"no stored failure matches '{query}' (run analyze on a run first)")
+        return
+    if isinstance(me, list):
+        print(f"'{query}' is ambiguous, matches:")
+        for d in me:
+            print(f"  {d['test_id']}")
+        return
+    print(f"{me['test_id']}  [{me['run_id']}]")
+    print(f"  text: {me['error_type']} {me['template']}")
+    print(f"  diagnosed as: {me['root_cause']}\n")
+    print(f"Most similar past failures (top {k}):")
+    for score, d in hits:
+        print(f"  {score:.2f}  {d['test_id']}")
+        print(f"        {d['template']}")
+        print(f"        diagnosed as: {d['root_cause']}")
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="rootiq")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -152,6 +172,9 @@ def main() -> None:
     a.add_argument("run_id")
     sub.add_parser("flaky", help="Detect flaky tests from run history")
     sub.add_parser("correlate", help="Check whether failures line up with CPU load")
+    s = sub.add_parser("similar", help="Find past failures similar to one test")
+    s.add_argument("query")
+    s.add_argument("-k", type=int, default=3)
     b = sub.add_parser("benchmark", help="Score diagnoses against labeled ground truth")
     b.add_argument("run_id")
     args = parser.parse_args()
@@ -166,6 +189,8 @@ def main() -> None:
         cmd_correlate()
     elif args.command == "benchmark":
         cmd_benchmark(args.run_id)
+    elif args.command == "similar":
+        cmd_similar(args.query, args.k)
 
 
 if __name__ == "__main__":

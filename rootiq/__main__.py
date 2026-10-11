@@ -9,6 +9,7 @@ from rootiq.rca.correlate import correlate, load_observations
 from rootiq.rca.flaky import MIN_OBSERVATIONS, classify, load_history
 from rootiq.rca.rules import diagnose_with_evidence
 from rootiq.storage.history import history_for, save_run
+from rootiq.rca.benchmark import load_cases, score, summarize
 
 
 def cmd_run(stress: bool = False) -> None:
@@ -114,6 +115,32 @@ def cmd_correlate() -> None:
         print(f"  calm  : {r['calm_fail_rate']:.0%} failed over {r['calm_runs']} runs")
         print(f"  stress: {r['loaded_fail_rate']:.0%} failed over {r['loaded_runs']} runs")
 
+def cmd_benchmark(run_id: str) -> None:
+    path = Path("runs") / f"{run_id}.json"
+    if not path.exists():
+        print(f"{path} not found")
+        return
+    cases = load_cases()
+    print(f"Benchmark on {run_id} ({len(cases)} labeled cases)\n")
+    for name, use_ev in (("string rules only", False),
+                         ("rules + observed evidence", True)):
+        rec = json.loads(path.read_text(encoding="utf-8"))
+        rows = score(rec, cases, use_ev)
+        print(f"== {name} ==")
+        for kind in ("real", "simulated"):
+            sub = [r for r in rows if r["kind"] == kind]
+            if not sub:
+                print(f"  {kind:<10} no cases failed in this run")
+                continue
+            s = summarize(sub)
+            print(f"  {kind:<10} {s['correct']}/{s['n']} correct, "
+                  f"{s['unknown']} unknown, "
+                  f"{s['wrong_high_conf']} wrong at conf >= 0.70")
+        for r in rows:
+            if not r["correct"]:
+                print(f"    MISS {r['test_id']}: truth={r['truth']}, "
+                      f"got={r['pred']} ({r['confidence']:.2f})")
+        print()
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="rootiq")
@@ -124,6 +151,8 @@ def main() -> None:
     a.add_argument("run_id")
     sub.add_parser("flaky", help="Detect flaky tests from run history")
     sub.add_parser("correlate", help="Check whether failures line up with CPU load")
+    b = sub.add_parser("benchmark", help="Score diagnoses against labeled ground truth")
+    b.add_argument("run_id")
     args = parser.parse_args()
 
     if args.command == "run":
@@ -134,6 +163,8 @@ def main() -> None:
         cmd_flaky()
     elif args.command == "correlate":
         cmd_correlate()
+    elif args.command == "benchmark":
+        cmd_benchmark(args.run_id)
 
 
 if __name__ == "__main__":

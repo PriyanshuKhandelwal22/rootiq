@@ -1,0 +1,12 @@
+{
+  "tests.test_real_network::test_real_connection_refused": {"truth": "service_down", "kind": "real"},
+  "tests.test_real_network::test_real_read_timeout": {"truth": "service_unresponsive", "kind": "real"},
+  "tests.test_real_network::test_real_connect_timeout": {"truth": "network_path_or_firewall", "kind": "real"},
+  "tests.test_basic::test_assertion_failure": {"truth": "application_defect", "kind": "simulated"},
+  "tests.test_basic::test_missing_key_failure": {"truth": "missing_field_in_response", "kind": "simulated"},
+  "tests.test_network::test_timeout_host_a": {"truth": "network_path_or_service_unavailable", "kind": "simulated"},
+  "tests.test_network::test_timeout_host_b": {"truth": "network_path_or_service_unavailable", "kind": "simulated"},
+  "tests.test_network::test_connection_refused": {"truth": "service_down", "kind": "simulated"},
+  "tests.test_network::test_malformed_json_a": {"truth": "input_validation", "kind": "simulated"},
+  "tests.test_network::test_malformed_json_b": {"truth": "input_validation", "kind": "simulated"}
+}

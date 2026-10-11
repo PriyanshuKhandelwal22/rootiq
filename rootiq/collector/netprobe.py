@@ -14,13 +14,14 @@ def observed_http_get(url: str, timeout: float = 3.0) -> bytes:
     """GET a URL, record what happened, and re-raise the real error."""
     start = time.perf_counter()
     rec = {"type": "http", "url": url, "status": None, "body_excerpt": None,
-           "bytes_received": None, "bytes_expected": None, "outcome": "ok"}
+           "bytes_received": None, "bytes_expected": None, "outcome": "error"}
     try:
         with urllib.request.urlopen(url, timeout=timeout) as resp:
             rec["status"] = resp.status
             rec["bytes_expected"] = int(resp.headers.get("Content-Length", -1))
             body = resp.read()
             rec["bytes_received"] = len(body)
+            rec["outcome"] = "ok"
             return body
     except urllib.error.HTTPError as e:
         body = e.read()
@@ -35,10 +36,15 @@ def observed_http_get(url: str, timeout: float = 3.0) -> bytes:
     except ConnectionResetError:
         rec["outcome"] = "reset"
         raise
+    except TimeoutError:
+        rec["outcome"] = "timeout"
+        raise
+    except Exception as e:  # anything unexpected is recorded under its own name
+        rec["outcome"] = type(e).__name__
+        raise
     finally:
         rec["elapsed_ms"] = round((time.perf_counter() - start) * 1000, 1)
         log_evidence(rec)
-
 
 def _current_test_id() -> str | None:
     """Rebuild the same test_id format the JUnit parser produces."""
@@ -80,6 +86,9 @@ def observe_socket(host: str, port: int, phase: str):
         raise
     except ConnectionResetError as e:
         outcome, detail = "reset", str(e)
+        raise
+    except TimeoutError:
+        rec["outcome"] = "timeout"
         raise
     except OSError as e:
         outcome, detail = "os_error", str(e)

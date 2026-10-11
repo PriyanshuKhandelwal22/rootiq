@@ -1,25 +1,29 @@
 import socket
-import threading
-
-import pytest
 import struct
+import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+import pytest
 
 class _Handler(BaseHTTPRequestHandler):
     def log_message(self, *args):
         pass  # keep pytest output clean
 
+    def _reply(self, status, body, ctype=None):
+        self.send_response(status)
+        if ctype:
+            self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self):
         if self.path == "/error500":
-            body = (b'Traceback (most recent call last):\n'
-                    b'  File "app/handlers.py", line 42, in get_user\n'
-                    b'    return users[user_id]\n'
-                    b'KeyError: 42\n')
-            self.send_response(500)
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            self._reply(500, b'Traceback (most recent call last):\n'
+                             b'  File "app/handlers.py", line 42, in get_user\n'
+                             b'    return users[user_id]\n'
+                             b'KeyError: 42\n')
         elif self.path == "/partial":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -28,13 +32,21 @@ class _Handler(BaseHTTPRequestHandler):
             self.wfile.write(b'{"items": [1, 2, 3')  # sends only 18, then closes
         elif self.path == "/slow":
             time.sleep(1)
-            body = b"ok"
-            self.send_response(200)
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            self._reply(200, b"ok")
+        elif self.path == "/missing":
+            self._reply(404, b"not found")
+        elif self.path == "/unavailable":
+            self._reply(503, b"upstream connection refused")
+        elif self.path == "/wrongtype":
+            self._reply(200, b'{"count": "5"}', "application/json")
+        elif self.path == "/hang":
+            time.sleep(5)  # the client gives up after 2 seconds
+            try:
+                self._reply(200, b"too late")
+            except OSError:
+                pass  # client already hung up
 
-
+            
 @pytest.fixture
 def http_server():
     srv = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
@@ -74,7 +86,7 @@ def reset_server():
     srv.close()
 
 
-    
+
 @pytest.fixture
 def listening_server():
     """A real TCP server that accepts connections but never replies."""

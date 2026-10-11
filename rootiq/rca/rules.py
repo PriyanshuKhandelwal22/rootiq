@@ -118,6 +118,8 @@ def _describe(e: dict) -> str:
 def _http_rule(http_ev: list[dict]) -> tuple[dict, list[dict]] | None:
     """Rules driven by HTTP evidence. Returns (rule, evidence used) or None."""
     for e in http_ev:
+        status = e.get("status") or 0
+        body = e.get("body_excerpt") or ""
         if e["outcome"] == "incomplete_read":
             return ({"id": "E05", "root_cause": "truncated_response",
                      "confidence": 0.85,
@@ -125,15 +127,38 @@ def _http_rule(http_ev: list[dict]) -> tuple[dict, list[dict]] | None:
                                       "proxy or network cut the connection"],
                      "next_tests": ["compare Content-Length with bytes received",
                                     "check server logs for a crash at that time"]}, [e])
-        if e["outcome"] == "http_error" and e["status"] and e["status"] >= 500:
-            traced = "Traceback" in (e.get("body_excerpt") or "")
-            return ({"id": "E06",
-                     "root_cause": "application_defect" if traced else "server_error_unknown_cause",
-                     "confidence": 0.85 if traced else 0.50,
-                     "alternatives": ["dependency failure behind the server",
-                                      "bad input triggering an unhandled case"],
-                     "next_tests": ["inspect the stack trace location in server code",
-                                    "replay the request with known-good input"]}, [e])
+        if e["outcome"] == "timeout":
+            return ({"id": "E08", "root_cause": "service_unresponsive",
+                     "confidence": 0.70,
+                     "alternatives": ["server overloaded", "client timeout too short"],
+                     "next_tests": ["inspect server logs for the same window",
+                                    "retry with a longer timeout"]}, [e])
+        if e["outcome"] == "http_error" and 400 <= status < 500:
+            return ({"id": "E09", "root_cause": "resource_not_found" if status == 404
+                     else "client_request_error",
+                     "confidence": 0.80 if status == 404 else 0.60,
+                     "alternatives": ["wrong URL in the test", "resource deleted"],
+                     "next_tests": ["verify the URL and resource exist",
+                                    "check API version or routing"]}, [e])
+        if e["outcome"] == "http_error" and status >= 500:
+            if "Traceback" in body:
+                return ({"id": "E06", "root_cause": "application_defect",
+                         "confidence": 0.85,
+                         "alternatives": ["dependency failure behind the server",
+                                          "bad input triggering an unhandled case"],
+                         "next_tests": ["inspect the stack trace location in server code",
+                                        "replay the request with known-good input"]}, [e])
+            if any(w in body.lower() for w in ("upstream", "dependency", "backend")):
+                return ({"id": "E10", "root_cause": "dependency_failure",
+                         "confidence": 0.75,
+                         "alternatives": ["application defect in the gateway",
+                                          "network issue between services"],
+                         "next_tests": ["check the upstream service health",
+                                        "look at the upstream error in server logs"]}, [e])
+            return ({"id": "E06b", "root_cause": "server_error_unknown_cause",
+                     "confidence": 0.50,
+                     "alternatives": ["application defect", "dependency failure"],
+                     "next_tests": ["inspect server logs", "replay the request"]}, [e])
     return None
 
 def diagnose_with_evidence(group: list[dict], evidence: list[dict],

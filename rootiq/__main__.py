@@ -1,5 +1,6 @@
 import argparse
 import json
+from operator import sub
 from pathlib import Path
 
 from rootiq.collector.runner import run_tests
@@ -11,7 +12,7 @@ from rootiq.rca.rules import diagnose_with_evidence
 from rootiq.storage.history import history_for, save_run
 from rootiq.rca.benchmark import load_cases, score, summarize
 from rootiq.rca.retrieval import find_similar
-
+from rootiq.rca.retrieval_benchmark import score_retrieval
 
 def cmd_run(stress: bool = False) -> None:
     rec = run_tests(stress=stress)
@@ -147,7 +148,7 @@ def cmd_benchmark(run_id: str) -> None:
 def cmd_similar(query: str, k: int) -> None:
     me, hits = find_similar(query, k)
     if me is None:
-        print(f"no stored failure matches '{query}' (run analyze on a run first)")
+        print("no stored failure matches '{query}' (run analyze on a run first)")
         return
     if isinstance(me, list):
         print(f"'{query}' is ambiguous, matches:")
@@ -163,6 +164,28 @@ def cmd_similar(query: str, k: int) -> None:
         print(f"        {d['template']}")
         print(f"        diagnosed as: {d['root_cause']}")
 
+def cmd_benchmark_retrieval() -> None:
+    rows = score_retrieval()
+    print(f"Retrieval-only (leave-one-out) on {len(rows)} labeled failures\n")
+    for kind in ("real", "simulated", "heldout", "heldout2", "heldout3"):
+        sub = [r for r in rows if r["kind"] == kind]
+        if not sub:
+            continue
+        ok = sum(r["correct"] for r in sub)
+        unk = sum(r["pred"] == "unknown_insufficient_evidence" for r in sub)
+        wrong_hi = sum(1 for r in sub if not r["correct"]
+                       and r["pred"] != "unknown_insufficient_evidence"
+                       and r["score"] >= 0.70)
+        print(f"  {kind:<10} {ok}/{len(sub)} correct, {unk} unknown, "
+              f"{wrong_hi} wrong at similarity >= 0.70")
+    total = sum(r["correct"] for r in rows)
+    print(f"\n  overall    {total}/{len(rows)} correct")
+    for r in rows:
+        if not r["correct"]:
+            print(f"    MISS {r['test_id']}: truth={r['truth']}, got={r['pred']} "
+                  f"(sim {r['score']:.2f} to {r['neighbor'].split('::')[-1]})")
+
+            
 def main() -> None:
     parser = argparse.ArgumentParser(prog="rootiq")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -172,6 +195,7 @@ def main() -> None:
     a.add_argument("run_id")
     sub.add_parser("flaky", help="Detect flaky tests from run history")
     sub.add_parser("correlate", help="Check whether failures line up with CPU load")
+    sub.add_parser("benchmark-retrieval", help="Score retrieval-only diagnosis")
     s = sub.add_parser("similar", help="Find past failures similar to one test")
     s.add_argument("query")
     s.add_argument("-k", type=int, default=3)
@@ -191,6 +215,8 @@ def main() -> None:
         cmd_benchmark(args.run_id)
     elif args.command == "similar":
         cmd_similar(args.query, args.k)
+    elif args.command == "benchmark-retrieval":
+        cmd_benchmark_retrieval()
 
 
 if __name__ == "__main__":

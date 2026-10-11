@@ -55,3 +55,21 @@ def find_similar(query: str, k: int = 3):
               for t, d in zip(all_tokens, docs) if d["test_id"] != me["test_id"]]
     scored.sort(key=lambda x: -x[0])
     return me, scored[:k]
+
+def rank_all(docs: list[dict]) -> dict[str, list[tuple[float, dict]]]:
+    """For each doc, every other doc ranked by TF-IDF cosine similarity."""
+    all_tokens = [tokens(d["text"]) for d in docs]
+    df = Counter()
+    for t in all_tokens:
+        df.update(set(t))
+    n = len(docs)
+    idf = {w: math.log((1 + n) / (1 + c)) + 1 for w, c in df.items()}
+    vecs = [_vector(t, idf) for t in all_tokens]
+
+    out = {}
+    for i, d in enumerate(docs):
+        scored = [(_cosine(vecs[i], vecs[j]), docs[j])
+                  for j in range(len(docs)) if j != i]
+        scored.sort(key=lambda x: (-x[0], x[1]["test_id"]))  # ties broken by name
+        out[d["test_id"]] = scored
+    return out

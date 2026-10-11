@@ -40,6 +40,7 @@ def cmd_analyze(run_id: str) -> None:
         return
     rec = json.loads(path.read_text(encoding="utf-8"))
     evidence = rec.get("evidence", [])
+    flows = (rec.get("network") or {}).get("flows")
     for i, e in enumerate(evidence, 1):
         e["id"] = f"EV{i}"  # stable: position in this run's evidence list
 
@@ -51,7 +52,7 @@ def cmd_analyze(run_id: str) -> None:
         failures.append(f)
 
     groups = group_failures(failures)
-    diagnoses = {fp: diagnose_with_evidence(items, evidence)
+    diagnoses = {fp: diagnose_with_evidence(items, evidence, flows)
                  for fp, items in groups.items()}
 
     print(f"{run_id}: {len(failures)} failure(s) in {len(groups)} group(s)")

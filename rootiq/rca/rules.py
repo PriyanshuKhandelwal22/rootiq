@@ -108,7 +108,8 @@ def _describe(e: dict) -> str:
             f"{e['outcome']} after {e['elapsed_ms']} ms")
 
 
-def diagnose_with_evidence(group: list[dict], evidence: list[dict]) -> dict:
+def diagnose_with_evidence(group: list[dict], evidence: list[dict],
+                           flows: dict | None = None) -> dict:
     """Prefer observed socket outcomes over error-message matching."""
     d = diagnose(group)
     ids = {f["test_id"] for f in group}
@@ -169,4 +170,38 @@ def diagnose_with_evidence(group: list[dict], evidence: list[dict]) -> dict:
     d["next_tests"] = rule["next_tests"]
     d["evidence"] = d["evidence"] + [_describe(e) for e in used]
     d["evidence_ids"] = [e["id"] for e in used]
+    if flows is not None:
+        checks = [(e["id"], packet_check(e, flows)) for e in used]
+        for ev_id, c in checks:
+            d["evidence"].append(f"PKT({ev_id}): {c['status']}: {c['note']}")
+        if any(c["status"] == "confirmed" for _, c in checks):
+            d["confidence"] = min(0.95, d["confidence"] + 0.10)
+        if any(c["status"] == "inconsistent" for _, c in checks):
+            d["confidence"] = max(0.30, d["confidence"] - 0.25)
+            d["evidence"].append("WARNING: wire evidence disagrees with app evidence")
     return d
+
+def packet_check(socket_ev: dict, flows: dict) -> dict:
+    """Compare what Python observed with what the wire showed, for one socket record."""
+    flow = (flows or {}).get(str(socket_ev["port"]))
+    if flow is None:
+        return {"status": "no_packets", "note": "no packets captured for this port"}
+    seq = flow["flag_sequence"]
+    outcome = socket_ev["outcome"]
+    if outcome == "refused":
+        if flow["saw_rst"]:
+            return {"status": "confirmed",
+                    "note": f"{seq.count('S')} SYN(s) answered by RST; nothing listening"}
+        return {"status": "inconsistent",
+                "note": "app saw refused but no RST on the wire (capture gap or proxy?)"}
+    if outcome == "timeout" and socket_ev["phase"] == "connect":
+        if flow["saw_syn"] and not flow["saw_synack"] and not flow["saw_rst"]:
+            return {"status": "confirmed",
+                    "note": "SYN sent, no SYN-ACK or RST came back; packets dropped"}
+        return {"status": "inconsistent",
+                "note": "connect timeout but the wire shows a reply"}
+    if outcome == "ok" and socket_ev["phase"] == "connect":
+        if flow["saw_synack"]:
+            return {"status": "confirmed", "note": "3-way handshake completed"}
+        return {"status": "inconsistent", "note": "connect ok but no SYN-ACK captured"}
+    return {"status": "n/a", "note": ""}

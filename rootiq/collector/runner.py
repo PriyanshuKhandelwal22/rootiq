@@ -11,6 +11,7 @@ from rootiq.collector.junit import parse_junit
 from rootiq.collector.metrics import MetricsSampler
 from rootiq.collector.netprobe import read_evidence
 from rootiq.collector.stress import CpuStress
+from rootiq.collector.pcaps import PacketCapture
 
 RUNS_DIR = Path("runs")
 
@@ -26,7 +27,8 @@ def next_run_id() -> str:
     return f"run_{(max(numbers, default=0) + 1):03d}"
 
 
-def run_tests(pytest_args: list[str] | None = None, stress: bool = False) -> dict:
+def run_tests(pytest_args: list[str] | None = None, stress: bool = False,
+              capture: bool = True) -> dict:
     run_id = next_run_id()
     junit_path = RUNS_DIR / f"{run_id}.junit.xml"
     evidence_path = RUNS_DIR / f"{run_id}.evidence.jsonl"
@@ -35,12 +37,16 @@ def run_tests(pytest_args: list[str] | None = None, stress: bool = False) -> dic
            *(pytest_args or [])]
 
     sampler = MetricsSampler()
+    pcap_path = RUNS_DIR / f"{run_id}.pcap"
+    cap = PacketCapture() if capture else None
     stressor = CpuStress() if stress else None
     started_at = datetime.now(timezone.utc).isoformat()
     try:
         if stressor:
             stressor.start()
             time.sleep(0.5)  # let the load ramp up before measuring
+        if cap:
+            cap.start()
         sampler.start()
         start = time.perf_counter()
         proc = subprocess.run(
@@ -49,6 +55,7 @@ def run_tests(pytest_args: list[str] | None = None, stress: bool = False) -> dic
         )
         duration = time.perf_counter() - start
         metrics = sampler.stop()
+        network = cap.stop(pcap_path) if cap else None
     finally:
         if stressor:
             stressor.stop()
@@ -74,6 +81,7 @@ def run_tests(pytest_args: list[str] | None = None, stress: bool = False) -> dic
         "metrics": metrics,
         "tests": tests,
         "evidence": evidence,
+        "network": network,
         "stdout": proc.stdout,
         "stderr": proc.stderr,
         "environment": {

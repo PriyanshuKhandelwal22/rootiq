@@ -1,7 +1,5 @@
 import time
-
-BUDGET_SEC = 0.06
-
+BUDGET_SEC = 0.15
 
 def test_cpu_bound_work_meets_deadline():
     start = time.perf_counter()

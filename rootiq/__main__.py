@@ -23,9 +23,14 @@ def cmd_run(stress: bool = False) -> None:
           f"mem avg/max = {m['mem_avg']}%/{m['mem_max']}%   "
           f"({m['sample_count']} samples)")
     print(f"stress={'ON' if rec['stress'] else 'off'}")
+    n = rec.get("network") or {}
+    if n.get("error"):
+        print(f"capture: FAILED ({n['error']})")
+    else:
+        print(f"capture: {n.get('packet_count', 0)} packets -> {n.get('pcap_file')}")
     for t in rec["tests"]:
         if t["status"] != "passed":
-            print(f"  [{t['status'].upper()}] {t['name']}: {t['message']}")
+            print(f"  [{t['status'].upper()}] {t['name']}: {t['message']}") 
 
 
 def cmd_analyze(run_id: str) -> None:

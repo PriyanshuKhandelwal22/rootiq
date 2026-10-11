@@ -14,7 +14,8 @@ ERROR_LINE_RE = re.compile(
 )
 # "tests\test_basic.py:9: AssertionError"  ->  AssertionError
 LOCATION_RE = re.compile(r"^\S+:\d+: ([A-Za-z_][\w.]*)\s*$", re.M)
-FRAME_RE = re.compile(r"([^\s\\/]+\.py):(\d+):")
+# a traceback location line, e.g. "rootiq\collector\netprobe.py:19: in observed_http_get"
+FRAME_RE = re.compile(r"^(?![E>]\s)(\S.*?\.py):(\d+):", re.M)
 
 
 def normalize_message(text: str) -> str:
@@ -40,13 +41,27 @@ def extract_error_type(message: str | None, traceback: str | None) -> str:
     return "UnknownError"
 
 
+def _basename(path: str) -> str:
+    return re.split(r"[\\/]", path)[-1]
+
+
+def _is_own_code(path: str) -> bool:
+    """True for files inside the project, False for the standard library and packages."""
+    p = path.replace("\\", "/")
+    if p.startswith(("..", "/")) or re.match(r"^[A-Za-z]:", p):
+        return False
+    return "site-packages" not in p and ".venv/" not in p
+
+
 def extract_top_frame(traceback: str | None) -> dict:
-    """The last file:line in the traceback is where the failure surfaced."""
+    """file: last frame in project code. raised_in: file where the exception was raised."""
     frames = FRAME_RE.findall(traceback or "")
     if not frames:
-        return {"file": None, "line": None}
-    file, line = frames[-1]
-    return {"file": file, "line": int(line)}
+        return {"file": None, "line": None, "raised_in": None}
+    own = [f for f in frames if _is_own_code(f[0])]
+    path, line = (own or frames)[-1]
+    return {"file": _basename(path), "line": int(line),
+            "raised_in": _basename(frames[-1][0])}
 
 
 def normalize_failure(test: dict) -> dict:

@@ -1,14 +1,13 @@
-import threading
+import socket
 import time
 from collections import defaultdict
 from pathlib import Path
 
 from scapy.all import IP, TCP, AsyncSniffer, conf, wrpcap
 
-conf.use_pcap = True
+from rootiq.collector.netprobe import BLACKHOLE_HOST
 
-FLAG_NAMES = {"S": "SYN", "SA": "SYN-ACK", "A": "ACK", "FA": "FIN-ACK",
-              "F": "FIN", "R": "RST", "RA": "RST-ACK", "PA": "PSH-ACK"}
+conf.use_pcap = True
 
 
 def _loopback():
@@ -19,58 +18,74 @@ def _loopback():
     return None
 
 
+def _outbound_iface():
+    """Interface Windows would use to reach the blackhole (no packets are sent)."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect((BLACKHOLE_HOST, 80))
+        local_ip = s.getsockname()[0]
+    except OSError:
+        return None
+    finally:
+        s.close()
+    for iface in conf.ifaces.values():
+        if getattr(iface, "ip", None) == local_ip:
+            return iface
+    return None
+
+
 class PacketCapture:
-    """Captures loopback TCP traffic in the background while tests run."""
+    """Background capture: loopback TCP, plus outbound TCP to the blackhole host."""
 
     def __init__(self):
-        self.sniffer = None
+        self.sniffers = []
         self.packets = []
-        self.error = None
+        self.errors = []
 
-    def start(self) -> None:
-        iface = _loopback()
+    def _add(self, iface, bpf, label):
         if iface is None:
-            self.error = "no loopback interface (is Npcap installed?)"
+            self.errors.append(f"{label}: interface not found")
             return
         try:
-            self.sniffer = AsyncSniffer(iface=iface, filter="tcp", store=True)
-            self.sniffer.start()
-            time.sleep(1.0)  # give the sniffer time to attach before tests start
+            sn = AsyncSniffer(iface=iface, filter=bpf, store=True)
+            sn.start()
+            self.sniffers.append(sn)
         except Exception as e:  # capture is optional, never break a test run
-            self.error = f"{type(e).__name__}: {e}"
-            self.sniffer = None
+            self.errors.append(f"{label}: {type(e).__name__}: {e}")
+
+    def start(self) -> None:
+        self._add(_loopback(), "tcp", "loopback")
+        self._add(_outbound_iface(), f"tcp and host {BLACKHOLE_HOST}", "outbound")
+        if self.sniffers:
+            time.sleep(1.0)  # let the sniffers attach before tests start
 
     def stop(self, pcap_path: Path) -> dict:
-        if self.sniffer is not None:
+        if self.sniffers:
             time.sleep(0.3)  # let trailing packets arrive
+        for sn in self.sniffers:
             try:
-                self.packets = list(self.sniffer.stop() or [])
+                self.packets += list(sn.stop() or [])
             except Exception as e:
-                self.error = f"{type(e).__name__}: {e}"
+                self.errors.append(f"stop: {type(e).__name__}: {e}")
+        self.packets.sort(key=lambda p: float(p.time))
         if self.packets:
             wrpcap(str(pcap_path), self.packets)
         return {
             "pcap_file": str(pcap_path) if self.packets else None,
             "packet_count": len(self.packets),
-            "error": self.error,
+            "error": "; ".join(self.errors) or None,
             "flows": self._flows(),
         }
 
     def _flows(self) -> dict:
-        """Summarize packets per server port: which flags were seen, in order."""
         by_port = defaultdict(list)
         for p in self.packets:
-            if not p.haslayer(TCP):
+            if not (p.haslayer(TCP) and p.haslayer(IP)):
                 continue
             tcp = p[TCP]
             flags = str(tcp.flags)
             for port in (tcp.sport, tcp.dport):
-                by_port[port].append({
-                    "t": round(float(p.time), 4),
-                    "src": f"{p[IP].src}:{tcp.sport}",
-                    "dst": f"{p[IP].dst}:{tcp.dport}",
-                    "flags": flags,
-                })
+                by_port[port].append({"flags": flags})
         return {
             str(port): {
                 "packets": len(pkts),

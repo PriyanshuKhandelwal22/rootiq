@@ -5,7 +5,7 @@ import time
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-
+BLACKHOLE_HOST = "10.255.255.1"  # private address that should silently drop SYNs
 
 def _current_test_id() -> str | None:
     """Rebuild the same test_id format the JUnit parser produces."""

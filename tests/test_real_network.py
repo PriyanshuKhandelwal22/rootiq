@@ -1,7 +1,12 @@
 import socket
 
 from rootiq.collector.netprobe import observe_socket
+from rootiq.collector.netprobe import BLACKHOLE_HOST, observe_socket
 
+
+def test_real_connect_timeout():
+    with observe_socket(BLACKHOLE_HOST, 80, "connect"):
+        socket.create_connection((BLACKHOLE_HOST, 80), timeout=3)
 
 def test_real_connect_passes(listening_server):
     host, port = listening_server

@@ -5,7 +5,40 @@ import time
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+import urllib.error
+import urllib.request
+import http.client
 BLACKHOLE_HOST = "10.255.255.1"  # private address that should silently drop SYNs
+
+def observed_http_get(url: str, timeout: float = 3.0) -> bytes:
+    """GET a URL, record what happened, and re-raise the real error."""
+    start = time.perf_counter()
+    rec = {"type": "http", "url": url, "status": None, "body_excerpt": None,
+           "bytes_received": None, "bytes_expected": None, "outcome": "ok"}
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            rec["status"] = resp.status
+            rec["bytes_expected"] = int(resp.headers.get("Content-Length", -1))
+            body = resp.read()
+            rec["bytes_received"] = len(body)
+            return body
+    except urllib.error.HTTPError as e:
+        body = e.read()
+        rec.update(status=e.code, outcome="http_error",
+                   body_excerpt=body[:300].decode("utf-8", "replace"),
+                   bytes_received=len(body))
+        raise
+    except http.client.IncompleteRead as e:
+        rec.update(outcome="incomplete_read", bytes_received=len(e.partial),
+                   bytes_expected=len(e.partial) + (e.expected or 0))
+        raise
+    except ConnectionResetError:
+        rec["outcome"] = "reset"
+        raise
+    finally:
+        rec["elapsed_ms"] = round((time.perf_counter() - start) * 1000, 1)
+        log_evidence(rec)
+
 
 def _current_test_id() -> str | None:
     """Rebuild the same test_id format the JUnit parser produces."""
@@ -44,6 +77,9 @@ def observe_socket(host: str, port: int, phase: str):
         raise
     except socket.gaierror as e:
         outcome, detail = "dns_error", str(e)
+        raise
+    except ConnectionResetError as e:
+        outcome, detail = "reset", str(e)
         raise
     except OSError as e:
         outcome, detail = "os_error", str(e)

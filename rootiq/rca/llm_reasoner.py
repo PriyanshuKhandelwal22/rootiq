@@ -84,6 +84,7 @@ def call_model(user_text: str, max_tokens: int = 8000):
         "generationConfig": {
             "maxOutputTokens": max_tokens,
             "responseMimeType": "application/json",
+            "thinkingConfig": {"thinkingBudget": 1024},
         },
     }
     req = urllib.request.Request(

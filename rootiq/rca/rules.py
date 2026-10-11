@@ -104,9 +104,37 @@ def diagnose(group: list[dict]) -> dict:
 
 
 def _describe(e: dict) -> str:
+    if e.get("type") == "http":
+        text = f"{e['id']}: GET {e['url']} -> status {e['status']} ({e['outcome']})"
+        if e["outcome"] == "incomplete_read":
+            text += f", received {e['bytes_received']} of {e['bytes_expected']} bytes"
+        excerpt = (e.get("body_excerpt") or "").strip()
+        if excerpt:
+            text += f", body ends: {excerpt.splitlines()[-1]}"
+        return text
     return (f"{e['id']}: {e['phase']} to {e['host']}:{e['port']} -> "
             f"{e['outcome']} after {e['elapsed_ms']} ms")
 
+def _http_rule(http_ev: list[dict]) -> tuple[dict, list[dict]] | None:
+    """Rules driven by HTTP evidence. Returns (rule, evidence used) or None."""
+    for e in http_ev:
+        if e["outcome"] == "incomplete_read":
+            return ({"id": "E05", "root_cause": "truncated_response",
+                     "confidence": 0.85,
+                     "alternatives": ["server crashed mid-response",
+                                      "proxy or network cut the connection"],
+                     "next_tests": ["compare Content-Length with bytes received",
+                                    "check server logs for a crash at that time"]}, [e])
+        if e["outcome"] == "http_error" and e["status"] and e["status"] >= 500:
+            traced = "Traceback" in (e.get("body_excerpt") or "")
+            return ({"id": "E06",
+                     "root_cause": "application_defect" if traced else "server_error_unknown_cause",
+                     "confidence": 0.85 if traced else 0.50,
+                     "alternatives": ["dependency failure behind the server",
+                                      "bad input triggering an unhandled case"],
+                     "next_tests": ["inspect the stack trace location in server code",
+                                    "replay the request with known-good input"]}, [e])
+    return None
 
 def diagnose_with_evidence(group: list[dict], evidence: list[dict],
                            flows: dict | None = None) -> dict:
@@ -115,9 +143,10 @@ def diagnose_with_evidence(group: list[dict], evidence: list[dict],
     ids = {f["test_id"] for f in group}
     socks = [e for e in evidence
              if e.get("type") == "socket" and e.get("test_id") in ids]
-    if not socks:
+    https = [e for e in evidence
+             if e.get("type") == "http" and e.get("test_id") in ids]
+    if not socks and not https:
         return d  # no observations, so fall back to the string rules
-
     def pick(phase, outcome):
         return [e for e in socks if e["phase"] == phase and e["outcome"] == outcome]
 
@@ -131,7 +160,19 @@ def diagnose_with_evidence(group: list[dict], evidence: list[dict],
                for c in connect_ok)
     ]
 
-    if refused:
+    reset = pick("read", "reset") + pick("connect", "reset")
+    http_hit = _http_rule(https)
+
+    if http_hit:
+        rule, used = http_hit
+    elif reset:
+        used, rule = reset, {
+            "id": "E07", "root_cause": "connection_reset", "confidence": 0.80,
+            "alternatives": ["server process crashed", "firewall or proxy reset the flow",
+                             "server aborted on invalid request"],
+            "next_tests": ["check server logs for a crash or abort",
+                           "capture packets and see which side sent the RST"]}
+    elif refused:
         used, rule = refused, {
             "id": "E01", "root_cause": "service_down", "confidence": 0.85,
             "alternatives": ["wrong port in test configuration",
@@ -171,8 +212,10 @@ def diagnose_with_evidence(group: list[dict], evidence: list[dict],
     d["evidence"] = d["evidence"] + [_describe(e) for e in used]
     d["evidence_ids"] = [e["id"] for e in used]
     if flows is not None:
-        checks = [(e["id"], packet_check(e, flows)) for e in used]
+        checks = [(e["id"], packet_check(e, flows)) for e in used if "port" in e]
         for ev_id, c in checks:
+            if c["status"] == "n/a":
+                continue
             d["evidence"].append(f"PKT({ev_id}): {c['status']}: {c['note']}")
         if any(c["status"] == "confirmed" for _, c in checks):
             d["confidence"] = min(0.95, d["confidence"] + 0.10)
@@ -204,4 +247,9 @@ def packet_check(socket_ev: dict, flows: dict) -> dict:
         if flow["saw_synack"]:
             return {"status": "confirmed", "note": "3-way handshake completed"}
         return {"status": "inconsistent", "note": "connect ok but no SYN-ACK captured"}
+    if outcome == "reset":
+        if flow["saw_synack"] and flow["saw_rst"]:
+            return {"status": "confirmed",
+                    "note": "handshake completed, then RST: connection aborted mid-stream"}
+        return {"status": "inconsistent", "note": "app saw reset but no RST after a handshake"}
     return {"status": "n/a", "note": ""}

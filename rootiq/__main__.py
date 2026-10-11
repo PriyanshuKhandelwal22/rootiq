@@ -13,6 +13,7 @@ from rootiq.storage.history import history_for, save_run
 from rootiq.rca.benchmark import load_cases, score, summarize
 from rootiq.rca.retrieval import find_similar
 from rootiq.rca.retrieval_benchmark import score_retrieval
+from rootiq.rca.hybrid import score_systems
 
 def cmd_run(stress: bool = False) -> None:
     rec = run_tests(stress=stress)
@@ -185,6 +186,28 @@ def cmd_benchmark_retrieval() -> None:
             print(f"    MISS {r['test_id']}: truth={r['truth']}, got={r['pred']} "
                   f"(sim {r['score']:.2f} to {r['neighbor'].split('::')[-1]})")
 
+def cmd_benchmark_hybrid(run_id: str) -> None:
+    rows = score_systems(run_id)
+    print(f"Three-way comparison on {run_id} ({len(rows)} labeled failures)\n")
+    print(f"  {'':<22}{'rules+evidence':>16}{'retrieval-only':>16}{'hybrid':>10}")
+
+    def line(label, sub):
+        def hit(key, n):
+            return sum(r["truth"] in r[key][:n] for r in sub)
+        n = len(sub)
+        for top in (1, 3):
+            print(f"  {label + ' top-' + str(top):<22}"
+                  f"{hit('rules', top):>13}/{n}"
+                  f"{hit('retrieval', top):>13}/{n}"
+                  f"{hit('hybrid', top):>7}/{n}")
+
+    line("all", rows)
+    line("held-out batches", [r for r in rows if r["kind"].startswith("heldout")])
+    print()
+    for r in rows:
+        if r["truth"] not in r["hybrid"]:
+            print(f"  MISS {r['test_id'].split('::')[-1]}: truth={r['truth']}, "
+                  f"hybrid={r['hybrid'] or 'unknown'}")
             
 def main() -> None:
     parser = argparse.ArgumentParser(prog="rootiq")
@@ -201,6 +224,8 @@ def main() -> None:
     s.add_argument("-k", type=int, default=3)
     b = sub.add_parser("benchmark", help="Score diagnoses against labeled ground truth")
     b.add_argument("run_id")
+    h = sub.add_parser("benchmark-hybrid", help="Compare rules, retrieval and hybrid")
+    h.add_argument("run_id")
     args = parser.parse_args()
 
     if args.command == "run":
@@ -217,7 +242,8 @@ def main() -> None:
         cmd_similar(args.query, args.k)
     elif args.command == "benchmark-retrieval":
         cmd_benchmark_retrieval()
-
+    elif args.command == "benchmark-hybrid":
+        cmd_benchmark_hybrid(args.run_id)
 
 if __name__ == "__main__":
     main()

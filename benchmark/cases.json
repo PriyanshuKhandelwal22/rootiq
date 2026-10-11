@@ -11,5 +11,9 @@
   "tests.test_network::test_malformed_json_b": {"truth": "input_validation", "kind": "simulated"},
   "tests.test_heldout::test_http_500_stack_trace": {"truth": "application_defect", "kind": "heldout"},
   "tests.test_heldout::test_partial_response": {"truth": "truncated_response", "kind": "heldout"},
-  "tests.test_heldout::test_connection_reset_midstream": {"truth": "connection_reset", "kind": "heldout"}
+  "tests.test_heldout::test_connection_reset_midstream": {"truth": "connection_reset", "kind": "heldout"},
+  "tests.test_heldout2::test_http_404_missing_resource": {"truth": "resource_not_found", "kind": "heldout2"},
+  "tests.test_heldout2::test_http_503_upstream_refused": {"truth": "dependency_failure", "kind": "heldout2"},
+  "tests.test_heldout2::test_wrong_field_type": {"truth": "schema_mismatch", "kind": "heldout2"},
+  "tests.test_heldout2::test_response_slower_than_timeout": {"truth": "service_unresponsive", "kind": "heldout2"}
 }

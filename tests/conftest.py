@@ -10,10 +10,12 @@ class _Handler(BaseHTTPRequestHandler):
     def log_message(self, *args):
         pass  # keep pytest output clean
 
-    def _reply(self, status, body, ctype=None):
+    def _reply(self, status, body, ctype=None, headers=None):
         self.send_response(status)
         if ctype:
             self.send_header("Content-Type", ctype)
+        for k, v in (headers or {}).items():
+            self.send_header(k, v)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -45,8 +47,15 @@ class _Handler(BaseHTTPRequestHandler):
                 self._reply(200, b"too late")
             except OSError:
                 pass  # client already hung up
+        elif self.path == "/unauthorized":
+            self._reply(401, b"invalid token",
+                        headers={"WWW-Authenticate": "Bearer"})
+        elif self.path == "/ratelimited":
+            self._reply(429, b"too many requests",
+                        headers={"Retry-After": "30"})
+        elif self.path == "/closeearly":
+            self.close_connection = True  # read the request, send nothing, close
 
-            
 @pytest.fixture
 def http_server():
     srv = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)

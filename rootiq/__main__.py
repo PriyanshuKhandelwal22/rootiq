@@ -128,7 +128,7 @@ def cmd_benchmark(run_id: str) -> None:
         rec = json.loads(path.read_text(encoding="utf-8"))
         rows = score(rec, cases, use_ev)
         print(f"== {name} ==")
-        for kind in ("real", "simulated", "heldout", "heldout2"):
+        for kind in ("real", "simulated", "heldout", "heldout2", "heldout3"):
             sub = [r for r in rows if r["kind"] == kind]
             if not sub:
                 print(f"  {kind:<10} no cases failed in this run")

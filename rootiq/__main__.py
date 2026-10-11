@@ -208,7 +208,32 @@ def cmd_benchmark_hybrid(run_id: str) -> None:
         if r["truth"] not in r["hybrid"]:
             print(f"  MISS {r['test_id'].split('::')[-1]}: truth={r['truth']}, "
                   f"hybrid={r['hybrid'] or 'unknown'}")
-            
+
+
+def cmd_llm(run_id: str, query: str, show: bool, no_rule: bool) -> None:
+    from rootiq.rca.llm_reasoner import MODEL, run_llm
+    try:
+        r = run_llm(run_id, query, include_rule=not no_rule)
+    except Exception as e:
+        print(f"failed: {e}")
+        return
+    if "fatal" in r:
+        print(r["fatal"])
+        return
+    print(f"model: {MODEL}   tokens: {r['usage']}")
+    if show:
+        print(json.dumps(r["packet"], indent=1))
+    if not r["valid"]:
+        print(f"\nREJECTED by validator: {r['error']}\nraw output:\n{r['raw']}")
+        return
+    for i, h in enumerate(r["result"]["hypotheses"], 1):
+        print(f"\n#{i} {h['root_cause']}  (confidence {h['confidence']})")
+        print(f"   cites     : {', '.join(h['evidence_ids']) or '-'}")
+        print(f"   observed  : {h['observed']}")
+        print(f"   inference : {h['inference']}")
+    print(f"\nnext_tests: {'; '.join(r['result']['next_tests'])}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="rootiq")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -226,6 +251,12 @@ def main() -> None:
     b.add_argument("run_id")
     h = sub.add_parser("benchmark-hybrid", help="Compare rules, retrieval and hybrid")
     h.add_argument("run_id")
+    l = sub.add_parser("llm", help="LLM diagnosis of one failure")
+    l.add_argument("run_id")
+    l.add_argument("query")
+    l.add_argument("--show-packet", action="store_true")
+    l.add_argument("--no-rule", action="store_true",
+                   help="hide the rule engine's answer from the model")
     args = parser.parse_args()
 
     if args.command == "run":
@@ -244,6 +275,8 @@ def main() -> None:
         cmd_benchmark_retrieval()
     elif args.command == "benchmark-hybrid":
         cmd_benchmark_hybrid(args.run_id)
+    elif args.command == "llm":
+        cmd_llm(args.run_id, args.query, args.show_packet, args.no_rule)
 
 if __name__ == "__main__":
     main()

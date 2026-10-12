@@ -8,7 +8,8 @@ from pathlib import Path
 from rootiq.rca.benchmark import load_cases, score
 
 # minimum correct per batch for rules + observed evidence (regression floor)
-FLOOR = {"real": 3, "simulated": 7, "heldout": 3, "heldout2": 3, "heldout3": 4}
+FLOOR = {"real": 3, "simulated": 7, "heldout": 3, "heldout2": 3,
+         "heldout3": 4, "heldout4": 1}
 
 rec = json.loads(Path("benchmark/sample_run.json").read_text(encoding="utf-8"))
 rows = score(rec, load_cases(), use_evidence=True)

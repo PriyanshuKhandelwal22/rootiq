@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from rootiq.collector.netprobe import observed_native_run
+
 SRC = Path("native") / "crash_null.c"
 EXE = Path("native") / "crash_null.exe"
 
@@ -17,5 +19,5 @@ def crash_binary():
 
 
 def test_null_pointer_crash(crash_binary):
-    proc = subprocess.run([str(crash_binary)], capture_output=True, text=True)
+    proc = observed_native_run([str(crash_binary)])
     assert proc.returncode == 0, f"native program exited with code {proc.returncode}"

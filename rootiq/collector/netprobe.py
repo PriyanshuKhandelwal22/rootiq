@@ -8,7 +8,27 @@ from pathlib import Path
 import urllib.error
 import urllib.request
 import http.client
+import subprocess
 BLACKHOLE_HOST = "10.255.255.1"  # private address that should silently drop SYNs
+
+
+
+def observed_native_run(cmd: list[str], timeout: float = 10.0):
+    """Run a native program, record exit status and last stdout line as evidence."""
+    start = time.perf_counter()
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    code = proc.returncode & 0xFFFFFFFF  # unsigned, so -1073741819 == 3221225477
+    lines = proc.stdout.strip().splitlines()
+    log_evidence({
+        "type": "native",
+        "program": Path(cmd[0]).name,
+        "exit_code_hex": f"0x{code:08X}",
+        "exit_code_signed": proc.returncode,
+        "last_stdout": lines[-1][:200] if lines else None,
+        "stderr_empty": not proc.stderr.strip(),
+        "elapsed_ms": round((time.perf_counter() - start) * 1000, 1),
+    })
+    return proc
 
 def observed_http_get(url: str, timeout: float = 3.0) -> bytes:
     """GET a URL, record what happened, and re-raise the real error."""

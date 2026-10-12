@@ -104,6 +104,10 @@ def diagnose(group: list[dict]) -> dict:
 
 
 def _describe(e: dict) -> str:
+    if e.get("type") == "native":
+        return (f"{e['id']}: {e['program']} exited {e['exit_code_hex']} "
+                f"({NATIVE_FAULTS.get(e['exit_code_hex'], 'unrecognized')}), "
+                f"last output: {e['last_stdout']}")
     if e.get("type") == "http":
         text = f"{e['id']}: GET {e['url']} -> status {e['status']} ({e['outcome']})"
         if e["outcome"] == "incomplete_read":
@@ -174,6 +178,30 @@ def _http_rule(http_ev: list[dict]) -> tuple[dict, list[dict]] | None:
                      "next_tests": ["inspect server logs", "replay the request"]}, [e])
     return None
 
+# Windows NTSTATUS codes that mean a native crash
+NATIVE_FAULTS = {
+    "0xC0000005": "access violation (invalid memory read/write)",
+    "0xC00000FD": "stack overflow",
+    "0xC0000374": "heap corruption",
+    "0xC0000409": "stack buffer overrun / fast-fail",
+    "0xC000001D": "illegal instruction",
+}
+
+
+def _native_rule(native_ev: list[dict]):
+    for e in native_ev:
+        meaning = NATIVE_FAULTS.get(e["exit_code_hex"])
+        if meaning:
+            return ({"id": "E14", "root_cause": "native_memory_fault",
+                     "confidence": 0.90,
+                     "alternatives": ["undefined behavior in native code",
+                                      "bad input reaching native code",
+                                      "corrupted shared library"],
+                     "next_tests": ["rebuild with -g and run under a debugger (gdb/WinDbg)",
+                                    "enable AddressSanitizer and rerun",
+                                    "inspect the code around the last stdout line"]}, [e])
+    return None
+
 def diagnose_with_evidence(group: list[dict], evidence: list[dict],
                            flows: dict | None = None) -> dict:
     """Prefer observed socket outcomes over error-message matching."""
@@ -183,7 +211,9 @@ def diagnose_with_evidence(group: list[dict], evidence: list[dict],
              if e.get("type") == "socket" and e.get("test_id") in ids]
     https = [e for e in evidence
              if e.get("type") == "http" and e.get("test_id") in ids]
-    if not socks and not https:
+    natives = [e for e in evidence
+               if e.get("type") == "native" and e.get("test_id") in ids]
+    if not socks and not https and not natives:
         return d  # no observations, so fall back to the string rules
     def pick(phase, outcome):
         return [e for e in socks if e["phase"] == phase and e["outcome"] == outcome]
@@ -200,8 +230,10 @@ def diagnose_with_evidence(group: list[dict], evidence: list[dict],
 
     reset = pick("read", "reset") + pick("connect", "reset")
     http_hit = _http_rule(https)
-
-    if http_hit:
+    native_hit = _native_rule(natives)
+    if native_hit:
+        rule, used = native_hit
+    elif http_hit:
         rule, used = http_hit
     elif reset:
         used, rule = reset, {

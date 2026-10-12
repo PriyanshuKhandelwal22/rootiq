@@ -3,9 +3,9 @@
  "timestamp": "2026-01-01T00:00:00+00:00",
  "exit_code": 1,
  "summary": {
-  "total": 27,
+  "total": 28,
   "passed": 6,
-  "failed": 21,
+  "failed": 22,
   "error": 0,
   "skipped": 0
  },
@@ -56,7 +56,7 @@
    "name": "test_http_500_stack_trace",
    "status": "failed",
    "message": "urllib.error.HTTPError: HTTP Error 500: Internal Server Error",
-   "traceback": "http_server = 'http://127.0.0.1:53395'\n\n    def test_http_500_stack_trace(http_server):\n>       observed_http_get(f\"{http_server}/error500\")\n\ntests\\test_heldout.py:8: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:19: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:493: in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:602: in http_response\n    response = self.parent.error(\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:531: in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <urllib.request.HTTPDefaultErrorHandler object at 0x000002AEAF6DDBE0>\nreq = <urllib.request.Request object at 0x000002AEAF6DE510>\nfp = <http.client.HTTPResponse object at 0x000002AEAF74C370>, code = 500\nmsg = 'Internal Server Error'\nhdrs = <http.client.HTTPMessage object at 0x000002AEAF653100>\n\n    def http_error_default(self, req, fp, code, msg, hdrs):\n>       raise HTTPError(req.full_url, code, msg, hdrs, fp)\nE       urllib.error.HTTPError: HTTP Error 500: Internal Server Error\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:611: HTTPError"
+   "traceback": "http_server = 'http://127.0.0.1:56528'\n\n    def test_http_500_stack_trace(http_server):\n>       observed_http_get(f\"{http_server}/error500\")\n\ntests\\test_heldout.py:8: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:39: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:493: in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:602: in http_response\n    response = self.parent.error(\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:531: in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <urllib.request.HTTPDefaultErrorHandler object at 0x000001B217231A90>\nreq = <urllib.request.Request object at 0x000001B2172323C0>\nfp = <http.client.HTTPResponse object at 0x000001B2171D78E0>, code = 500\nmsg = 'Internal Server Error'\nhdrs = <http.client.HTTPMessage object at 0x000001B21724D0F0>\n\n    def http_error_default(self, req, fp, code, msg, hdrs):\n>       raise HTTPError(req.full_url, code, msg, hdrs, fp)\nE       urllib.error.HTTPError: HTTP Error 500: Internal Server Error\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:611: HTTPError"
   },
   {
    "test_id": "tests.test_heldout::test_partial_response",
@@ -64,7 +64,7 @@
    "name": "test_partial_response",
    "status": "failed",
    "message": "http.client.IncompleteRead: IncompleteRead(18 bytes read, 82 more expected)",
-   "traceback": "http_server = 'http://127.0.0.1:53397'\n\n    def test_partial_response(http_server):\n>       observed_http_get(f\"{http_server}/partial\")\n\ntests\\test_heldout.py:12: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:22: in observed_http_get\n    body = resp.read()\n           ^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:500: in read\n    s = self._safe_read(self.length)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <http.client.HTTPResponse object at 0x000002AEAF6FF730>, amt = 100\n\n    def _safe_read(self, amt):\n        \"\"\"Read the number of bytes requested.\n    \n        This function should be used when <amt> bytes \"should\" be present for\n        reading. If the bytes are truly not available (due to EOF), then the\n        IncompleteRead exception can be used to detect the problem.\n        \"\"\"\n        cursize = min(amt, _MIN_READ_BUF_SIZE)\n        data = self.fp.read(cursize)\n        if len(data) >= amt:\n            return data\n        if len(data) < cursize:\n>           raise IncompleteRead(data, amt - len(data))\nE           http.client.IncompleteRead: IncompleteRead(18 bytes read, 82 more expected)\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:652: IncompleteRead"
+   "traceback": "http_server = 'http://127.0.0.1:56530'\n\n    def test_partial_response(http_server):\n>       observed_http_get(f\"{http_server}/partial\")\n\ntests\\test_heldout.py:12: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:42: in observed_http_get\n    body = resp.read()\n           ^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:500: in read\n    s = self._safe_read(self.length)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <http.client.HTTPResponse object at 0x000001B21725A080>, amt = 100\n\n    def _safe_read(self, amt):\n        \"\"\"Read the number of bytes requested.\n    \n        This function should be used when <amt> bytes \"should\" be present for\n        reading. If the bytes are truly not available (due to EOF), then the\n        IncompleteRead exception can be used to detect the problem.\n        \"\"\"\n        cursize = min(amt, _MIN_READ_BUF_SIZE)\n        data = self.fp.read(cursize)\n        if len(data) >= amt:\n            return data\n        if len(data) < cursize:\n>           raise IncompleteRead(data, amt - len(data))\nE           http.client.IncompleteRead: IncompleteRead(18 bytes read, 82 more expected)\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:652: IncompleteRead"
   },
   {
    "test_id": "tests.test_heldout::test_connection_reset_midstream",
@@ -72,7 +72,7 @@
    "name": "test_connection_reset_midstream",
    "status": "failed",
    "message": "ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host",
-   "traceback": "reset_server = ('127.0.0.1', 50164)\n\n    def test_connection_reset_midstream(reset_server):\n        host, port = reset_server\n        with socket.create_connection((host, port), timeout=3) as s:\n            with observe_socket(host, port, \"read\"):\n                s.sendall(b\"hello\")\n>               s.recv(1024)\nE               ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host\n\ntests\\test_heldout.py:20: ConnectionResetError"
+   "traceback": "reset_server = ('127.0.0.1', 56532)\n\n    def test_connection_reset_midstream(reset_server):\n        host, port = reset_server\n        with socket.create_connection((host, port), timeout=3) as s:\n            with observe_socket(host, port, \"read\"):\n>               s.sendall(b\"hello\")\nE               ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host\n\ntests\\test_heldout.py:19: ConnectionResetError"
   },
   {
    "test_id": "tests.test_heldout2::test_http_404_missing_resource",
@@ -80,7 +80,7 @@
    "name": "test_http_404_missing_resource",
    "status": "failed",
    "message": "urllib.error.HTTPError: HTTP Error 404: Not Found",
-   "traceback": "http_server = 'http://127.0.0.1:50166'\n\n    def test_http_404_missing_resource(http_server):\n>       observed_http_get(f\"{http_server}/missing\")\n\ntests\\test_heldout2.py:7: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:19: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:493: in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:602: in http_response\n    response = self.parent.error(\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:531: in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <urllib.request.HTTPDefaultErrorHandler object at 0x000002AEAF6DDBE0>\nreq = <urllib.request.Request object at 0x000002AEAF6E5BD0>\nfp = <http.client.HTTPResponse object at 0x000002AEAF6FECB0>, code = 404\nmsg = 'Not Found', hdrs = <http.client.HTTPMessage object at 0x000002AEAF768500>\n\n    def http_error_default(self, req, fp, code, msg, hdrs):\n>       raise HTTPError(req.full_url, code, msg, hdrs, fp)\nE       urllib.error.HTTPError: HTTP Error 404: Not Found\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:611: HTTPError"
+   "traceback": "http_server = 'http://127.0.0.1:56534'\n\n    def test_http_404_missing_resource(http_server):\n>       observed_http_get(f\"{http_server}/missing\")\n\ntests\\test_heldout2.py:7: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:39: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:493: in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:602: in http_response\n    response = self.parent.error(\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:531: in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <urllib.request.HTTPDefaultErrorHandler object at 0x000001B217231A90>\nreq = <urllib.request.Request object at 0x000001B2172B0050>\nfp = <http.client.HTTPResponse object at 0x000001B2172D9090>, code = 404\nmsg = 'Not Found', hdrs = <http.client.HTTPMessage object at 0x000001B2172E0410>\n\n    def http_error_default(self, req, fp, code, msg, hdrs):\n>       raise HTTPError(req.full_url, code, msg, hdrs, fp)\nE       urllib.error.HTTPError: HTTP Error 404: Not Found\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:611: HTTPError"
   },
   {
    "test_id": "tests.test_heldout2::test_http_503_upstream_refused",
@@ -88,7 +88,7 @@
    "name": "test_http_503_upstream_refused",
    "status": "failed",
    "message": "urllib.error.HTTPError: HTTP Error 503: Service Unavailable",
-   "traceback": "http_server = 'http://127.0.0.1:50169'\n\n    def test_http_503_upstream_refused(http_server):\n>       observed_http_get(f\"{http_server}/unavailable\")\n\ntests\\test_heldout2.py:11: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:19: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:493: in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:602: in http_response\n    response = self.parent.error(\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:531: in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <urllib.request.HTTPDefaultErrorHandler object at 0x000002AEAF6DDBE0>\nreq = <urllib.request.Request object at 0x000002AEAF8282B0>\nfp = <http.client.HTTPResponse object at 0x000002AEAF6FCA30>, code = 503\nmsg = 'Service Unavailable'\nhdrs = <http.client.HTTPMessage object at 0x000002AEAF671C10>\n\n    def http_error_default(self, req, fp, code, msg, hdrs):\n>       raise HTTPError(req.full_url, code, msg, hdrs, fp)\nE       urllib.error.HTTPError: HTTP Error 503: Service Unavailable\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:611: HTTPError"
+   "traceback": "http_server = 'http://127.0.0.1:56536'\n\n    def test_http_503_upstream_refused(http_server):\n>       observed_http_get(f\"{http_server}/unavailable\")\n\ntests\\test_heldout2.py:11: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:39: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:493: in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:602: in http_response\n    response = self.parent.error(\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:531: in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <urllib.request.HTTPDefaultErrorHandler object at 0x000001B217231A90>\nreq = <urllib.request.Request object at 0x000001B21724E3F0>\nfp = <http.client.HTTPResponse object at 0x000001B21725AF20>, code = 503\nmsg = 'Service Unavailable'\nhdrs = <http.client.HTTPMessage object at 0x000001B216F9BF50>\n\n    def http_error_default(self, req, fp, code, msg, hdrs):\n>       raise HTTPError(req.full_url, code, msg, hdrs, fp)\nE       urllib.error.HTTPError: HTTP Error 503: Service Unavailable\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:611: HTTPError"
   },
   {
    "test_id": "tests.test_heldout2::test_wrong_field_type",
@@ -96,7 +96,7 @@
    "name": "test_wrong_field_type",
    "status": "failed",
    "message": "TypeError: can only concatenate str (not \"int\") to str",
-   "traceback": "http_server = 'http://127.0.0.1:50171'\n\n    def test_wrong_field_type(http_server):\n        data = json.loads(observed_http_get(f\"{http_server}/wrongtype\"))\n>       total = data[\"count\"] + 1  # \"count\" arrives as a string, so this raises TypeError\n                ^^^^^^^^^^^^^^^^^\nE       TypeError: can only concatenate str (not \"int\") to str\n\ntests\\test_heldout2.py:16: TypeError"
+   "traceback": "http_server = 'http://127.0.0.1:56538'\n\n    def test_wrong_field_type(http_server):\n        data = json.loads(observed_http_get(f\"{http_server}/wrongtype\"))\n>       total = data[\"count\"] + 1  # \"count\" arrives as a string, so this raises TypeError\n                ^^^^^^^^^^^^^^^^^\nE       TypeError: can only concatenate str (not \"int\") to str\n\ntests\\test_heldout2.py:16: TypeError"
   },
   {
    "test_id": "tests.test_heldout2::test_response_slower_than_timeout",
@@ -104,7 +104,7 @@
    "name": "test_response_slower_than_timeout",
    "status": "failed",
    "message": "TimeoutError: timed out",
-   "traceback": "http_server = 'http://127.0.0.1:50173'\n\n    def test_response_slower_than_timeout(http_server):\n>       observed_http_get(f\"{http_server}/hang\", timeout=2)\n\ntests\\test_heldout2.py:20: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:19: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:487: in open\n    response = self._open(req, data)\n               ^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:504: in _open\n    result = self._call_chain(self.handle_open, protocol, protocol +\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:1350: in http_open\n    return self.do_open(http.client.HTTPConnection, req)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:1325: in do_open\n    r = h.getresponse()\n        ^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:1459: in getresponse\n    response.begin()\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:336: in begin\n    version, status, reason = self._read_status()\n                              ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:297: in _read_status\n    line = str(self.fp.readline(_MAXLINE + 1), \"iso-8859-1\")\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <socket.SocketIO object at 0x000002AEAF687280>\nb = <memory at 0x000002AEAF671D80>\n\n    def readinto(self, b):\n        \"\"\"Read up to len(b) bytes into the writable buffer *b* and return\n        the number of bytes read.  If the socket is non-blocking and no bytes\n        are available, None is returned.\n    \n        If *b* is non-empty, a 0 return value indicates that the connection\n        was shutdown at the other end.\n        \"\"\"\n        self._checkClosed()\n        self._checkReadable()\n        if self._timeout_occurred:\n            raise OSError(\"cannot read from timed out object\")\n        try:\n>           return self._sock.recv_into(b)\n                   ^^^^^^^^^^^^^^^^^^^^^^^\nE           TimeoutError: timed out\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\socket.py:729: TimeoutError"
+   "traceback": "http_server = 'http://127.0.0.1:56540'\n\n    def test_response_slower_than_timeout(http_server):\n>       observed_http_get(f\"{http_server}/hang\", timeout=2)\n\ntests\\test_heldout2.py:20: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:39: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:487: in open\n    response = self._open(req, data)\n               ^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:504: in _open\n    result = self._call_chain(self.handle_open, protocol, protocol +\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:1350: in http_open\n    return self.do_open(http.client.HTTPConnection, req)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:1325: in do_open\n    r = h.getresponse()\n        ^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:1459: in getresponse\n    response.begin()\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:336: in begin\n    version, status, reason = self._read_status()\n                              ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:297: in _read_status\n    line = str(self.fp.readline(_MAXLINE + 1), \"iso-8859-1\")\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <socket.SocketIO object at 0x000001B2172D82B0>\nb = <memory at 0x000001B2172D0340>\n\n    def readinto(self, b):\n        \"\"\"Read up to len(b) bytes into the writable buffer *b* and return\n        the number of bytes read.  If the socket is non-blocking and no bytes\n        are available, None is returned.\n    \n        If *b* is non-empty, a 0 return value indicates that the connection\n        was shutdown at the other end.\n        \"\"\"\n        self._checkClosed()\n        self._checkReadable()\n        if self._timeout_occurred:\n            raise OSError(\"cannot read from timed out object\")\n        try:\n>           return self._sock.recv_into(b)\n                   ^^^^^^^^^^^^^^^^^^^^^^^\nE           TimeoutError: timed out\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\socket.py:729: TimeoutError"
   },
   {
    "test_id": "tests.test_heldout3::test_http_401_invalid_token",
@@ -112,7 +112,7 @@
    "name": "test_http_401_invalid_token",
    "status": "failed",
    "message": "urllib.error.HTTPError: HTTP Error 401: Unauthorized",
-   "traceback": "http_server = 'http://127.0.0.1:50175'\n\n    def test_http_401_invalid_token(http_server):\n>       observed_http_get(f\"{http_server}/unauthorized\")\n\ntests\\test_heldout3.py:7: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:19: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:493: in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:602: in http_response\n    response = self.parent.error(\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:531: in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <urllib.request.HTTPDefaultErrorHandler object at 0x000002AEAF6DDBE0>\nreq = <urllib.request.Request object at 0x000002AEAF82D590>\nfp = <http.client.HTTPResponse object at 0x000002AEAF6FE770>, code = 401\nmsg = 'Unauthorized'\nhdrs = <http.client.HTTPMessage object at 0x000002AEAF6F6710>\n\n    def http_error_default(self, req, fp, code, msg, hdrs):\n>       raise HTTPError(req.full_url, code, msg, hdrs, fp)\nE       urllib.error.HTTPError: HTTP Error 401: Unauthorized\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:611: HTTPError"
+   "traceback": "http_server = 'http://127.0.0.1:62210'\n\n    def test_http_401_invalid_token(http_server):\n>       observed_http_get(f\"{http_server}/unauthorized\")\n\ntests\\test_heldout3.py:7: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:39: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:493: in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:602: in http_response\n    response = self.parent.error(\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:531: in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <urllib.request.HTTPDefaultErrorHandler object at 0x000001B217231A90>\nreq = <urllib.request.Request object at 0x000001B21720BBD0>\nfp = <http.client.HTTPResponse object at 0x000001B21725BDF0>, code = 401\nmsg = 'Unauthorized'\nhdrs = <http.client.HTTPMessage object at 0x000001B217236C10>\n\n    def http_error_default(self, req, fp, code, msg, hdrs):\n>       raise HTTPError(req.full_url, code, msg, hdrs, fp)\nE       urllib.error.HTTPError: HTTP Error 401: Unauthorized\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:611: HTTPError"
   },
   {
    "test_id": "tests.test_heldout3::test_http_429_rate_limited",
@@ -120,7 +120,7 @@
    "name": "test_http_429_rate_limited",
    "status": "failed",
    "message": "urllib.error.HTTPError: HTTP Error 429: Too Many Requests",
-   "traceback": "http_server = 'http://127.0.0.1:50177'\n\n    def test_http_429_rate_limited(http_server):\n>       observed_http_get(f\"{http_server}/ratelimited\")\n\ntests\\test_heldout3.py:11: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:19: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:493: in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:602: in http_response\n    response = self.parent.error(\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:531: in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <urllib.request.HTTPDefaultErrorHandler object at 0x000002AEAF6DDBE0>\nreq = <urllib.request.Request object at 0x000002AEAF82D7B0>\nfp = <http.client.HTTPResponse object at 0x000002AEAF74F9D0>, code = 429\nmsg = 'Too Many Requests'\nhdrs = <http.client.HTTPMessage object at 0x000002AEAF6F6AD0>\n\n    def http_error_default(self, req, fp, code, msg, hdrs):\n>       raise HTTPError(req.full_url, code, msg, hdrs, fp)\nE       urllib.error.HTTPError: HTTP Error 429: Too Many Requests\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:611: HTTPError"
+   "traceback": "http_server = 'http://127.0.0.1:62213'\n\n    def test_http_429_rate_limited(http_server):\n>       observed_http_get(f\"{http_server}/ratelimited\")\n\ntests\\test_heldout3.py:11: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:39: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:493: in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:602: in http_response\n    response = self.parent.error(\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:531: in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <urllib.request.HTTPDefaultErrorHandler object at 0x000001B217231A90>\nreq = <urllib.request.Request object at 0x000001B21720B570>\nfp = <http.client.HTTPResponse object at 0x000001B2171D66B0>, code = 429\nmsg = 'Too Many Requests'\nhdrs = <http.client.HTTPMessage object at 0x000001B217237390>\n\n    def http_error_default(self, req, fp, code, msg, hdrs):\n>       raise HTTPError(req.full_url, code, msg, hdrs, fp)\nE       urllib.error.HTTPError: HTTP Error 429: Too Many Requests\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:611: HTTPError"
   },
   {
    "test_id": "tests.test_heldout3::test_unresolvable_hostname",
@@ -136,7 +136,7 @@
    "name": "test_server_closes_without_reply",
    "status": "failed",
    "message": "http.client.RemoteDisconnected: Remote end closed connection without response",
-   "traceback": "http_server = 'http://127.0.0.1:50179'\n\n    def test_server_closes_without_reply(http_server):\n>       observed_http_get(f\"{http_server}/closeearly\")\n\ntests\\test_heldout3.py:21: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:19: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:487: in open\n    response = self._open(req, data)\n               ^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:504: in _open\n    result = self._call_chain(self.handle_open, protocol, protocol +\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:1350: in http_open\n    return self.do_open(http.client.HTTPConnection, req)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:1325: in do_open\n    r = h.getresponse()\n        ^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:1459: in getresponse\n    response.begin()\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:336: in begin\n    version, status, reason = self._read_status()\n                              ^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <http.client.HTTPResponse object at 0x000002AEAF74E4D0>\n\n    def _read_status(self):\n        line = str(self.fp.readline(_MAXLINE + 1), \"iso-8859-1\")\n        if len(line) > _MAXLINE:\n            raise LineTooLong(\"status line\")\n        if self.debuglevel > 0:\n            print(\"reply:\", repr(line))\n        if not line:\n            # Presumably, the server closed the connection before\n            # sending a valid response.\n>           raise RemoteDisconnected(\"Remote end closed connection without\"\n                                     \" response\")\nE           http.client.RemoteDisconnected: Remote end closed connection without response\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:305: RemoteDisconnected"
+   "traceback": "http_server = 'http://127.0.0.1:62215'\n\n    def test_server_closes_without_reply(http_server):\n>       observed_http_get(f\"{http_server}/closeearly\")\n\ntests\\test_heldout3.py:21: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nrootiq\\collector\\netprobe.py:39: in observed_http_get\n    with urllib.request.urlopen(url, timeout=timeout) as resp:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:187: in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:487: in open\n    response = self._open(req, data)\n               ^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:504: in _open\n    result = self._call_chain(self.handle_open, protocol, protocol +\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:464: in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:1350: in http_open\n    return self.do_open(http.client.HTTPConnection, req)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\urllib\\request.py:1325: in do_open\n    r = h.getresponse()\n        ^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:1459: in getresponse\n    response.begin()\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:336: in begin\n    version, status, reason = self._read_status()\n                              ^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <http.client.HTTPResponse object at 0x000001B2172D9060>\n\n    def _read_status(self):\n        line = str(self.fp.readline(_MAXLINE + 1), \"iso-8859-1\")\n        if len(line) > _MAXLINE:\n            raise LineTooLong(\"status line\")\n        if self.debuglevel > 0:\n            print(\"reply:\", repr(line))\n        if not line:\n            # Presumably, the server closed the connection before\n            # sending a valid response.\n>           raise RemoteDisconnected(\"Remote end closed connection without\"\n                                     \" response\")\nE           http.client.RemoteDisconnected: Remote end closed connection without response\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\http\\client.py:305: RemoteDisconnected"
   },
   {
    "test_id": "tests.test_load::test_cpu_bound_work_meets_deadline",
@@ -145,6 +145,14 @@
    "status": "passed",
    "message": null,
    "traceback": null
+  },
+  {
+   "test_id": "tests.test_native::test_null_pointer_crash",
+   "suite": "tests.test_native",
+   "name": "test_null_pointer_crash",
+   "status": "failed",
+   "message": "AssertionError: native program exited with code 3221225477\nassert 3221225477 == 0\n +  where 3221225477 = CompletedProcess(args=['native\\\\crash_null.exe'], returncode=3221225477, stdout='about to dereference NULL\\n', stderr='').returncode",
+   "traceback": "crash_binary = WindowsPath('native/crash_null.exe')\n\n    def test_null_pointer_crash(crash_binary):\n        proc = observed_native_run([str(crash_binary)])\n>       assert proc.returncode == 0, f\"native program exited with code {proc.returncode}\"\nE       AssertionError: native program exited with code 3221225477\nE       assert 3221225477 == 0\nE        +  where 3221225477 = CompletedProcess(args=['native\\\\crash_null.exe'], returncode=3221225477, stdout='about to dereference NULL\\n', stderr='').returncode\n\ntests\\test_native.py:23: AssertionError"
   },
   {
    "test_id": "tests.test_network::test_service_reachable_passes",
@@ -184,7 +192,7 @@
    "name": "test_malformed_json_a",
    "status": "failed",
    "message": "json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
-   "traceback": "def test_malformed_json_a():\n>       json.loads(\"{bad\")\n\ntests\\test_network.py:21: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\__init__.py:352: in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\decoder.py:345: in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <json.decoder.JSONDecoder object at 0x000002AEACC6B8C0>, s = '{bad'\nidx = 0\n\n    def raw_decode(self, s, idx=0):\n        \"\"\"Decode a JSON document from ``s`` (a ``str`` beginning with\n        a JSON document) and return a 2-tuple of the Python\n        representation and the index in ``s`` where the document ended.\n    \n        This can be used to decode a JSON document from a string that may\n        have extraneous data at the end.\n    \n        \"\"\"\n        try:\n>           obj, end = self.scan_once(s, idx)\n                       ^^^^^^^^^^^^^^^^^^^^^^\nE           json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\decoder.py:361: JSONDecodeError"
+   "traceback": "def test_malformed_json_a():\n>       json.loads(\"{bad\")\n\ntests\\test_network.py:21: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\__init__.py:352: in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\decoder.py:345: in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <json.decoder.JSONDecoder object at 0x000001B2145FB8C0>, s = '{bad'\nidx = 0\n\n    def raw_decode(self, s, idx=0):\n        \"\"\"Decode a JSON document from ``s`` (a ``str`` beginning with\n        a JSON document) and return a 2-tuple of the Python\n        representation and the index in ``s`` where the document ended.\n    \n        This can be used to decode a JSON document from a string that may\n        have extraneous data at the end.\n    \n        \"\"\"\n        try:\n>           obj, end = self.scan_once(s, idx)\n                       ^^^^^^^^^^^^^^^^^^^^^^\nE           json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\decoder.py:361: JSONDecodeError"
   },
   {
    "test_id": "tests.test_network::test_malformed_json_b",
@@ -192,7 +200,7 @@
    "name": "test_malformed_json_b",
    "status": "failed",
    "message": "json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
-   "traceback": "def test_malformed_json_b():\n>       json.loads(\"{oops\")\n\ntests\\test_network.py:25: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\__init__.py:352: in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\decoder.py:345: in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <json.decoder.JSONDecoder object at 0x000002AEACC6B8C0>, s = '{oops'\nidx = 0\n\n    def raw_decode(self, s, idx=0):\n        \"\"\"Decode a JSON document from ``s`` (a ``str`` beginning with\n        a JSON document) and return a 2-tuple of the Python\n        representation and the index in ``s`` where the document ended.\n    \n        This can be used to decode a JSON document from a string that may\n        have extraneous data at the end.\n    \n        \"\"\"\n        try:\n>           obj, end = self.scan_once(s, idx)\n                       ^^^^^^^^^^^^^^^^^^^^^^\nE           json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\decoder.py:361: JSONDecodeError"
+   "traceback": "def test_malformed_json_b():\n>       json.loads(\"{oops\")\n\ntests\\test_network.py:25: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\__init__.py:352: in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\decoder.py:345: in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <json.decoder.JSONDecoder object at 0x000001B2145FB8C0>, s = '{oops'\nidx = 0\n\n    def raw_decode(self, s, idx=0):\n        \"\"\"Decode a JSON document from ``s`` (a ``str`` beginning with\n        a JSON document) and return a 2-tuple of the Python\n        representation and the index in ``s`` where the document ended.\n    \n        This can be used to decode a JSON document from a string that may\n        have extraneous data at the end.\n    \n        \"\"\"\n        try:\n>           obj, end = self.scan_once(s, idx)\n                       ^^^^^^^^^^^^^^^^^^^^^^\nE           json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\json\\decoder.py:361: JSONDecodeError"
   },
   {
    "test_id": "tests.test_real_network::test_real_connect_timeout",
@@ -216,7 +224,7 @@
    "name": "test_real_connection_refused",
    "status": "failed",
    "message": "ConnectionRefusedError: [WinError 10061] No connection could be made because the target machine actively refused it",
-   "traceback": "closed_port = ('127.0.0.1', 53240)\n\n    def test_real_connection_refused(closed_port):\n        # Windows can take ~2s to report a refused loopback connection,\n        # so the timeout must be longer than that.\n        host, port = closed_port\n        with observe_socket(host, port, \"connect\"):\n>           socket.create_connection((host, port), timeout=5)\n\ntests\\test_real_network.py:22: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\socket.py:874: in create_connection\n    raise exceptions[0]\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\naddress = ('127.0.0.1', 53240), timeout = 5, source_address = None\nall_errors = False\n\n    def create_connection(address, timeout=_GLOBAL_DEFAULT_TIMEOUT,\n                          source_address=None, *, all_errors=False):\n        \"\"\"Connect to *address* and return the socket object.\n    \n        Convenience function.  Connect to *address* (a 2-tuple ``(host,\n        port)``) and return the socket object.  Passing the optional\n        *timeout* parameter will set the timeout on the socket instance\n        before attempting to connect.  If no *timeout* is supplied, the\n        global default timeout setting returned by :func:`getdefaulttimeout`\n        is used.  If *source_address* is set it must be a tuple of (host, port)\n        for the socket to bind as a source address before making the connection.\n        A host of '' or port 0 tells the OS to use the default. When a connection\n        cannot be created, raises the last error if *all_errors* is False,\n        and an ExceptionGroup of all errors if *all_errors* is True.\n        \"\"\"\n    \n        host, port = address\n        exceptions = []\n        for res in getaddrinfo(host, port, 0, SOCK_STREAM):\n            af, socktype, proto, canonname, sa = res\n            sock = None\n            try:\n                sock = socket(af, socktype, proto)\n                if timeout is not _GLOBAL_DEFAULT_TIMEOUT:\n                    sock.settimeout(timeout)\n                if source_address:\n                    sock.bind(source_address)\n>               sock.connect(sa)\nE               ConnectionRefusedError: [WinError 10061] No connection could be made because the target machine actively refused it\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\socket.py:859: ConnectionRefusedError"
+   "traceback": "closed_port = ('127.0.0.1', 49784)\n\n    def test_real_connection_refused(closed_port):\n        # Windows can take ~2s to report a refused loopback connection,\n        # so the timeout must be longer than that.\n        host, port = closed_port\n        with observe_socket(host, port, \"connect\"):\n>           socket.create_connection((host, port), timeout=5)\n\ntests\\test_real_network.py:22: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\socket.py:874: in create_connection\n    raise exceptions[0]\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\naddress = ('127.0.0.1', 49784), timeout = 5, source_address = None\nall_errors = False\n\n    def create_connection(address, timeout=_GLOBAL_DEFAULT_TIMEOUT,\n                          source_address=None, *, all_errors=False):\n        \"\"\"Connect to *address* and return the socket object.\n    \n        Convenience function.  Connect to *address* (a 2-tuple ``(host,\n        port)``) and return the socket object.  Passing the optional\n        *timeout* parameter will set the timeout on the socket instance\n        before attempting to connect.  If no *timeout* is supplied, the\n        global default timeout setting returned by :func:`getdefaulttimeout`\n        is used.  If *source_address* is set it must be a tuple of (host, port)\n        for the socket to bind as a source address before making the connection.\n        A host of '' or port 0 tells the OS to use the default. When a connection\n        cannot be created, raises the last error if *all_errors* is False,\n        and an ExceptionGroup of all errors if *all_errors* is True.\n        \"\"\"\n    \n        host, port = address\n        exceptions = []\n        for res in getaddrinfo(host, port, 0, SOCK_STREAM):\n            af, socktype, proto, canonname, sa = res\n            sock = None\n            try:\n                sock = socket(af, socktype, proto)\n                if timeout is not _GLOBAL_DEFAULT_TIMEOUT:\n                    sock.settimeout(timeout)\n                if source_address:\n                    sock.bind(source_address)\n>               sock.connect(sa)\nE               ConnectionRefusedError: [WinError 10061] No connection could be made because the target machine actively refused it\n\n..\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\socket.py:859: ConnectionRefusedError"
   },
   {
    "test_id": "tests.test_real_network::test_real_read_timeout",
@@ -224,107 +232,107 @@
    "name": "test_real_read_timeout",
    "status": "failed",
    "message": "TimeoutError: timed out",
-   "traceback": "listening_server = ('127.0.0.1', 53242)\n\n    def test_real_read_timeout(listening_server):\n        host, port = listening_server\n        with observe_socket(host, port, \"connect\"):\n            s = socket.create_connection((host, port), timeout=2)\n        with s:\n            s.settimeout(0.5)\n            with observe_socket(host, port, \"read\"):\n>               s.recv(1024)  # server never replies, so this really times out\n                ^^^^^^^^^^^^\nE               TimeoutError: timed out\n\ntests\\test_real_network.py:32: TimeoutError"
+   "traceback": "listening_server = ('127.0.0.1', 49786)\n\n    def test_real_read_timeout(listening_server):\n        host, port = listening_server\n        with observe_socket(host, port, \"connect\"):\n            s = socket.create_connection((host, port), timeout=2)\n        with s:\n            s.settimeout(0.5)\n            with observe_socket(host, port, \"read\"):\n>               s.recv(1024)  # server never replies, so this really times out\n                ^^^^^^^^^^^^\nE               TimeoutError: timed out\n\ntests\\test_real_network.py:32: TimeoutError"
   }
  ],
  "evidence": [
   {
    "test_id": "tests.test_heldout::test_http_500_stack_trace",
    "type": "http",
-   "url": "http://127.0.0.1:53395/error500",
+   "url": "http://127.0.0.1:56528/error500",
    "status": 500,
    "body_excerpt": "Traceback (most recent call last):\n  File \"app/handlers.py\", line 42, in get_user\n    return users[user_id]\nKeyError: 42\n",
    "bytes_received": 121,
    "bytes_expected": null,
    "outcome": "http_error",
-   "elapsed_ms": 14.5
+   "elapsed_ms": 15.5
   },
   {
    "test_id": "tests.test_heldout::test_partial_response",
    "type": "http",
-   "url": "http://127.0.0.1:53397/partial",
+   "url": "http://127.0.0.1:56530/partial",
    "status": 200,
    "body_excerpt": null,
    "bytes_received": 18,
    "bytes_expected": 100,
    "outcome": "incomplete_read",
-   "elapsed_ms": 1.8
+   "elapsed_ms": 1.4
   },
   {
    "test_id": "tests.test_heldout::test_connection_reset_midstream",
    "type": "socket",
    "host": "127.0.0.1",
-   "port": 50164,
+   "port": 56532,
    "phase": "read",
    "outcome": "reset",
-   "elapsed_ms": 0.3,
+   "elapsed_ms": 0.2,
    "detail": "[WinError 10054] An existing connection was forcibly closed by the remote host"
   },
   {
    "test_id": "tests.test_heldout2::test_http_404_missing_resource",
    "type": "http",
-   "url": "http://127.0.0.1:50166/missing",
+   "url": "http://127.0.0.1:56534/missing",
    "status": 404,
    "body_excerpt": "not found",
    "bytes_received": 9,
    "bytes_expected": null,
    "outcome": "http_error",
-   "elapsed_ms": 1.4
+   "elapsed_ms": 1.3
   },
   {
    "test_id": "tests.test_heldout2::test_http_503_upstream_refused",
    "type": "http",
-   "url": "http://127.0.0.1:50169/unavailable",
+   "url": "http://127.0.0.1:56536/unavailable",
    "status": 503,
    "body_excerpt": "upstream connection refused",
    "bytes_received": 27,
    "bytes_expected": null,
    "outcome": "http_error",
-   "elapsed_ms": 1.3
+   "elapsed_ms": 1.1
   },
   {
    "test_id": "tests.test_heldout2::test_wrong_field_type",
    "type": "http",
-   "url": "http://127.0.0.1:50171/wrongtype",
+   "url": "http://127.0.0.1:56538/wrongtype",
    "status": 200,
    "body_excerpt": null,
    "bytes_received": 14,
    "bytes_expected": 14,
    "outcome": "ok",
-   "elapsed_ms": 1.2
+   "elapsed_ms": 1.3
   },
   {
    "test_id": "tests.test_heldout2::test_response_slower_than_timeout",
    "type": "http",
-   "url": "http://127.0.0.1:50173/hang",
+   "url": "http://127.0.0.1:56540/hang",
    "status": null,
    "body_excerpt": null,
    "bytes_received": null,
    "bytes_expected": null,
    "outcome": "timeout",
-   "elapsed_ms": 2008.2
+   "elapsed_ms": 2025.5
   },
   {
    "test_id": "tests.test_heldout3::test_http_401_invalid_token",
    "type": "http",
-   "url": "http://127.0.0.1:50175/unauthorized",
+   "url": "http://127.0.0.1:62210/unauthorized",
    "status": 401,
    "body_excerpt": "invalid token",
    "bytes_received": 13,
    "bytes_expected": null,
    "outcome": "http_error",
-   "elapsed_ms": 1.8
+   "elapsed_ms": 1.9
   },
   {
    "test_id": "tests.test_heldout3::test_http_429_rate_limited",
    "type": "http",
-   "url": "http://127.0.0.1:50177/ratelimited",
+   "url": "http://127.0.0.1:62213/ratelimited",
    "status": 429,
    "body_excerpt": "too many requests",
    "bytes_received": 17,
    "bytes_expected": null,
    "outcome": "http_error",
-   "elapsed_ms": 14.3
+   "elapsed_ms": 13.8
   },
   {
    "test_id": "tests.test_heldout3::test_unresolvable_hostname",
@@ -333,19 +341,29 @@
    "port": 80,
    "phase": "connect",
    "outcome": "dns_error",
-   "elapsed_ms": 25.3,
+   "elapsed_ms": 80.6,
    "detail": "[Errno 11001] getaddrinfo failed"
   },
   {
    "test_id": "tests.test_heldout3::test_server_closes_without_reply",
    "type": "http",
-   "url": "http://127.0.0.1:50179/closeearly",
+   "url": "http://127.0.0.1:62215/closeearly",
    "status": null,
    "body_excerpt": null,
    "bytes_received": null,
    "bytes_expected": null,
    "outcome": "RemoteDisconnected",
-   "elapsed_ms": 33.5
+   "elapsed_ms": 1.7
+  },
+  {
+   "test_id": "tests.test_native::test_null_pointer_crash",
+   "type": "native",
+   "program": "crash_null.exe",
+   "exit_code_hex": "0xC0000005",
+   "exit_code_signed": 3221225477,
+   "last_stdout": "about to dereference NULL",
+   "stderr_empty": true,
+   "elapsed_ms": 1240.3
   },
   {
    "test_id": "tests.test_real_network::test_real_connect_timeout",
@@ -354,53 +372,53 @@
    "port": 80,
    "phase": "connect",
    "outcome": "timeout",
-   "elapsed_ms": 3003.6,
+   "elapsed_ms": 3009.9,
    "detail": "timed out"
   },
   {
    "test_id": "tests.test_real_network::test_real_connect_passes",
    "type": "socket",
    "host": "127.0.0.1",
-   "port": 53238,
+   "port": 49782,
    "phase": "connect",
    "outcome": "ok",
-   "elapsed_ms": 13.0,
+   "elapsed_ms": 7.4,
    "detail": null
   },
   {
    "test_id": "tests.test_real_network::test_real_connection_refused",
    "type": "socket",
    "host": "127.0.0.1",
-   "port": 53240,
+   "port": 49784,
    "phase": "connect",
    "outcome": "refused",
-   "elapsed_ms": 2029.6,
+   "elapsed_ms": 2038.5,
    "detail": "[WinError 10061] No connection could be made because the target machine actively refused it"
   },
   {
    "test_id": "tests.test_real_network::test_real_read_timeout",
    "type": "socket",
    "host": "127.0.0.1",
-   "port": 53242,
+   "port": 49786,
    "phase": "connect",
    "outcome": "ok",
-   "elapsed_ms": 6.5,
+   "elapsed_ms": 12.9,
    "detail": null
   },
   {
    "test_id": "tests.test_real_network::test_real_read_timeout",
    "type": "socket",
    "host": "127.0.0.1",
-   "port": 53242,
+   "port": 49786,
    "phase": "read",
    "outcome": "timeout",
-   "elapsed_ms": 501.7,
+   "elapsed_ms": 512.3,
    "detail": "timed out"
   }
  ],
  "network": {
   "flows": {
-   "53396": {
+   "56529": {
     "packets": 12,
     "flag_sequence": [
      "S",
@@ -420,7 +438,7 @@
     "saw_synack": true,
     "saw_rst": false
    },
-   "53395": {
+   "56528": {
     "packets": 12,
     "flag_sequence": [
      "S",
@@ -440,7 +458,7 @@
     "saw_synack": true,
     "saw_rst": false
    },
-   "53398": {
+   "56531": {
     "packets": 13,
     "flag_sequence": [
      "S",
@@ -461,7 +479,7 @@
     "saw_synack": true,
     "saw_rst": false
    },
-   "53397": {
+   "56530": {
     "packets": 13,
     "flag_sequence": [
      "S",
@@ -482,13 +500,11 @@
     "saw_synack": true,
     "saw_rst": false
    },
-   "50165": {
-    "packets": 6,
+   "56533": {
+    "packets": 4,
     "flag_sequence": [
      "S",
      "SA",
-     "A",
-     "PA",
      "A",
      "RA"
     ],
@@ -496,13 +512,11 @@
     "saw_synack": true,
     "saw_rst": true
    },
-   "50164": {
-    "packets": 6,
+   "56532": {
+    "packets": 4,
     "flag_sequence": [
      "S",
      "SA",
-     "A",
-     "PA",
      "A",
      "RA"
     ],
@@ -510,8 +524,8 @@
     "saw_synack": true,
     "saw_rst": true
    },
-   "50167": {
-    "packets": 12,
+   "56535": {
+    "packets": 14,
     "flag_sequence": [
      "S",
      "SA",
@@ -524,14 +538,16 @@
      "A",
      "FA",
      "FA",
+     "A",
+     "FA",
      "A"
     ],
     "saw_syn": true,
     "saw_synack": true,
     "saw_rst": false
    },
-   "50166": {
-    "packets": 12,
+   "56534": {
+    "packets": 14,
     "flag_sequence": [
      "S",
      "SA",
@@ -544,25 +560,6 @@
      "A",
      "FA",
      "FA",
-     "A"
-    ],
-    "saw_syn": true,
-    "saw_synack": true,
-    "saw_rst": false
-   },
-   "50170": {
-    "packets": 13,
-    "flag_sequence": [
-     "S",
-     "SA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A",
-     "FA",
      "A",
      "FA",
      "A"
@@ -571,29 +568,8 @@
     "saw_synack": true,
     "saw_rst": false
    },
-   "50169": {
-    "packets": 13,
-    "flag_sequence": [
-     "S",
-     "SA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A",
-     "FA",
-     "A",
-     "FA",
-     "A"
-    ],
-    "saw_syn": true,
-    "saw_synack": true,
-    "saw_rst": false
-   },
-   "50172": {
-    "packets": 12,
+   "56537": {
+    "packets": 14,
     "flag_sequence": [
      "S",
      "SA",
@@ -606,14 +582,16 @@
      "A",
      "FA",
      "FA",
+     "A",
+     "FA",
      "A"
     ],
     "saw_syn": true,
     "saw_synack": true,
     "saw_rst": false
    },
-   "50171": {
-    "packets": 12,
+   "56536": {
+    "packets": 14,
     "flag_sequence": [
      "S",
      "SA",
@@ -626,13 +604,59 @@
      "A",
      "FA",
      "FA",
+     "A",
+     "FA",
      "A"
     ],
     "saw_syn": true,
     "saw_synack": true,
     "saw_rst": false
    },
-   "50174": {
+   "56539": {
+    "packets": 14,
+    "flag_sequence": [
+     "S",
+     "SA",
+     "A",
+     "PA",
+     "A",
+     "PA",
+     "A",
+     "PA",
+     "A",
+     "FA",
+     "FA",
+     "A",
+     "FA",
+     "A"
+    ],
+    "saw_syn": true,
+    "saw_synack": true,
+    "saw_rst": false
+   },
+   "56538": {
+    "packets": 14,
+    "flag_sequence": [
+     "S",
+     "SA",
+     "A",
+     "PA",
+     "A",
+     "PA",
+     "A",
+     "PA",
+     "A",
+     "FA",
+     "FA",
+     "A",
+     "FA",
+     "A"
+    ],
+    "saw_syn": true,
+    "saw_synack": true,
+    "saw_rst": false
+   },
+   "56541": {
     "packets": 9,
     "flag_sequence": [
      "S",
@@ -649,7 +673,7 @@
     "saw_synack": true,
     "saw_rst": true
    },
-   "50173": {
+   "56540": {
     "packets": 9,
     "flag_sequence": [
      "S",
@@ -666,40 +690,8 @@
     "saw_synack": true,
     "saw_rst": true
    },
-   "17532": {
-    "packets": 8,
-    "flag_sequence": [
-     "PA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A"
-    ],
-    "saw_syn": false,
-    "saw_synack": false,
-    "saw_rst": false
-   },
-   "58147": {
-    "packets": 8,
-    "flag_sequence": [
-     "PA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A"
-    ],
-    "saw_syn": false,
-    "saw_synack": false,
-    "saw_rst": false
-   },
-   "50176": {
-    "packets": 12,
+   "62211": {
+    "packets": 14,
     "flag_sequence": [
      "S",
      "SA",
@@ -711,45 +703,6 @@
      "PA",
      "A",
      "FA",
-     "FA",
-     "A"
-    ],
-    "saw_syn": true,
-    "saw_synack": true,
-    "saw_rst": false
-   },
-   "50175": {
-    "packets": 12,
-    "flag_sequence": [
-     "S",
-     "SA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A",
-     "FA",
-     "FA",
-     "A"
-    ],
-    "saw_syn": true,
-    "saw_synack": true,
-    "saw_rst": false
-   },
-   "50178": {
-    "packets": 13,
-    "flag_sequence": [
-     "S",
-     "SA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A",
-     "PA",
-     "A",
      "FA",
      "A",
      "FA",
@@ -759,8 +712,8 @@
     "saw_synack": true,
     "saw_rst": false
    },
-   "50177": {
-    "packets": 13,
+   "62210": {
+    "packets": 14,
     "flag_sequence": [
      "S",
      "SA",
@@ -768,6 +721,85 @@
      "PA",
      "A",
      "PA",
+     "A",
+     "PA",
+     "A",
+     "FA",
+     "FA",
+     "A",
+     "FA",
+     "A"
+    ],
+    "saw_syn": true,
+    "saw_synack": true,
+    "saw_rst": false
+   },
+   "62214": {
+    "packets": 14,
+    "flag_sequence": [
+     "S",
+     "SA",
+     "A",
+     "PA",
+     "A",
+     "PA",
+     "A",
+     "PA",
+     "A",
+     "FA",
+     "FA",
+     "A",
+     "FA",
+     "A"
+    ],
+    "saw_syn": true,
+    "saw_synack": true,
+    "saw_rst": false
+   },
+   "62213": {
+    "packets": 14,
+    "flag_sequence": [
+     "S",
+     "SA",
+     "A",
+     "PA",
+     "A",
+     "PA",
+     "A",
+     "PA",
+     "A",
+     "FA",
+     "FA",
+     "A",
+     "FA",
+     "A"
+    ],
+    "saw_syn": true,
+    "saw_synack": true,
+    "saw_rst": false
+   },
+   "62216": {
+    "packets": 9,
+    "flag_sequence": [
+     "S",
+     "SA",
+     "A",
+     "PA",
+     "A",
+     "FA",
+     "A",
+     "FA",
+     "A"
+    ],
+    "saw_syn": true,
+    "saw_synack": true,
+    "saw_rst": false
+   },
+   "62215": {
+    "packets": 9,
+    "flag_sequence": [
+     "S",
+     "SA",
      "A",
      "PA",
      "A",
@@ -804,41 +836,7 @@
     "saw_synack": false,
     "saw_rst": false
    },
-   "50180": {
-    "packets": 9,
-    "flag_sequence": [
-     "S",
-     "SA",
-     "A",
-     "PA",
-     "A",
-     "FA",
-     "A",
-     "FA",
-     "A"
-    ],
-    "saw_syn": true,
-    "saw_synack": true,
-    "saw_rst": false
-   },
-   "50179": {
-    "packets": 9,
-    "flag_sequence": [
-     "S",
-     "SA",
-     "A",
-     "PA",
-     "A",
-     "FA",
-     "A",
-     "FA",
-     "A"
-    ],
-    "saw_syn": true,
-    "saw_synack": true,
-    "saw_rst": false
-   },
-   "50181": {
+   "62218": {
     "packets": 2,
     "flag_sequence": [
      "S",
@@ -858,7 +856,7 @@
     "saw_synack": false,
     "saw_rst": false
    },
-   "53239": {
+   "49783": {
     "packets": 7,
     "flag_sequence": [
      "S",
@@ -873,7 +871,7 @@
     "saw_synack": true,
     "saw_rst": false
    },
-   "53238": {
+   "49782": {
     "packets": 7,
     "flag_sequence": [
      "S",
@@ -888,7 +886,7 @@
     "saw_synack": true,
     "saw_rst": false
    },
-   "53241": {
+   "49785": {
     "packets": 10,
     "flag_sequence": [
      "S",
@@ -906,7 +904,7 @@
     "saw_synack": false,
     "saw_rst": true
    },
-   "53240": {
+   "49784": {
     "packets": 10,
     "flag_sequence": [
      "S",
@@ -924,7 +922,7 @@
     "saw_synack": false,
     "saw_rst": true
    },
-   "53243": {
+   "49787": {
     "packets": 7,
     "flag_sequence": [
      "S",
@@ -939,7 +937,7 @@
     "saw_synack": true,
     "saw_rst": false
    },
-   "53242": {
+   "49786": {
     "packets": 7,
     "flag_sequence": [
      "S",

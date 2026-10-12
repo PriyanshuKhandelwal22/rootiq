@@ -5,6 +5,11 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
+import sys
+
+collect_ignore_glob = []
+if sys.platform != "win32":
+    collect_ignore_glob = ["test_real_network.py", "test_flaky.py", "test_load.py"]
 
 class _Handler(BaseHTTPRequestHandler):
     def log_message(self, *args):

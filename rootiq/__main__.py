@@ -120,7 +120,8 @@ def cmd_correlate() -> None:
         print(f"  stress: {r['loaded_fail_rate']:.0%} failed over {r['loaded_runs']} runs")
 
 def cmd_benchmark(run_id: str) -> None:
-    path = Path("runs") / f"{run_id}.json"
+    path = (Path("benchmark") / "sample_run.json" if run_id == "sample"
+            else Path("runs") / f"{run_id}.json")  
     if not path.exists():
         print(f"{path} not found")
         return
@@ -292,7 +293,8 @@ def main() -> None:
     elif args.command == "llm":
         cmd_llm(args.run_id, args.query, args.show_packet, args.no_rule)
     elif args.command == "benchmark-llm":
-        cmd_benchmark_llm(args.run_id, args.repeats, args.with_rule,args.limit, args.score_only)
+        cmd_benchmark_llm(args.run_id, args.repeats, args.with_rule,
+                          args.limit, args.score_only)
 
 if __name__ == "__main__":
     main()

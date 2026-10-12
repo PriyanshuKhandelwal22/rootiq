@@ -6,3 +6,4 @@ runs/
 *.pcap
 *.db
 .env
+native/*.exe

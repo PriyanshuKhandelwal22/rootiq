@@ -1,8 +1,16 @@
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 
 from rootiq import service
 
 app = FastAPI(title="RootIQ", version="0.1")
+
+
+@app.get("/", include_in_schema=False)
+def dashboard():
+    return FileResponse(Path(__file__).parent / "dashboard.html")
 
 
 @app.get("/health")

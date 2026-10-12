@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RootIQ</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 0; background: #f6f7f9; color: #1c1f24; }
+  header { background: #1c1f24; color: #fff; padding: 12px 24px; font-size: 18px; }
+  main { max-width: 1000px; margin: 0 auto; padding: 16px 24px; }
+  h2 { margin: 24px 0 8px; font-size: 16px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #e3e5e8; }
+  th { background: #eceef1; }
+  tr.run { cursor: pointer; }
+  tr.run:hover { background: #eef4ff; }
+  tr.sel { background: #dde9ff; }
+  .card { background: #fff; border: 1px solid #e3e5e8; border-radius: 6px;
+          padding: 10px 14px; margin: 8px 0; }
+  .cause { font-weight: 600; }
+  .unknown { color: #a15c00; }
+  .meta { color: #5b6370; font-size: 12px; }
+  .ev { font-family: ui-monospace, Consolas, monospace; font-size: 12px;
+        background: #f3f4f6; padding: 2px 6px; border-radius: 4px; display: block; margin: 2px 0; }
+  .tag { display: inline-block; padding: 0 8px; border-radius: 10px; font-size: 12px; background: #e3e5e8; }
+  .bad { background: #ffd9d9; } .ok { background: #d8f3dc; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14161a; color: #e6e8eb; }
+    table, .card { background: #1c1f24; border-color: #2c3037; }
+    th { background: #262a31; } th, td { border-color: #2c3037; }
+    tr.run:hover { background: #232a38; } tr.sel { background: #2a3a58; }
+    .ev { background: #262a31; } .tag { background: #2c3037; }
+    .bad { background: #5a2323; } .ok { background: #1f4a2b; }
+  }
+</style>
+</head>
+<body>
+<header>RootIQ</header>
+<main>
+  <h2>Runs</h2>
+  <table><thead><tr><th>Run</th><th>Time (UTC)</th><th>Exit</th><th>Passed</th><th>Failed</th></tr></thead>
+  <tbody id="runs"><tr><td colspan="5">Loading...</td></tr></tbody></table>
+
+  <h2 id="detail-title">Select a run</h2>
+  <div id="detail"></div>
+
+  <h2>Flaky and unstable tests</h2>
+  <div id="flaky">Loading...</div>
+</main>
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"']/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+async function getJSON(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(url + " returned " + r.status);
+  return r.json();
+}
+
+async function loadRuns() {
+  const body = document.getElementById("runs");
+  try {
+    const runs = (await getJSON("/runs")).reverse();
+    body.innerHTML = runs.map(r => {
+      const s = r.summary || {};
+      return `<tr class="run" data-id="${esc(r.run_id)}"><td>${esc(r.run_id)}</td>
+        <td>${esc((r.timestamp || "").slice(0, 19).replace("T", " "))}</td>
+        <td>${esc(r.exit_code)}</td><td>${esc(s.passed ?? "-")}</td><td>${esc(s.failed ?? "-")}</td></tr>`;
+    }).join("") || '<tr><td colspan="5">No runs yet</td></tr>';
+    body.querySelectorAll("tr.run").forEach(tr =>
+      tr.addEventListener("click", () => loadRun(tr.dataset.id, tr)));
+  } catch (e) { body.innerHTML = `<tr><td colspan="5">${esc(e.message)}</td></tr>`; }
+}
+
+async function loadRun(id, row) {
+  document.querySelectorAll("tr.sel").forEach(t => t.classList.remove("sel"));
+  row.classList.add("sel");
+  document.getElementById("detail-title").textContent = "Diagnoses for " + id;
+  const box = document.getElementById("detail");
+  box.textContent = "Loading...";
+  try {
+    const data = await getJSON("/runs/" + encodeURIComponent(id));
+    box.innerHTML = data.failures.map(f => {
+      const unk = f.root_cause === "unknown_insufficient_evidence";
+      const h = f.history || {};
+      const hist = h.runs_seen ? `seen in ${h.runs_seen} earlier analyzed run(s)` : "not seen in earlier analyzed runs";
+      return `<div class="card">
+        <div class="meta">${esc(f.test_id)} &middot; fingerprint ${esc(f.fingerprint)} &middot; ${esc(hist)}</div>
+        <div><span class="cause ${unk ? "unknown" : ""}">${esc(f.root_cause)}</span>
+          <span class="tag">confidence ${Number(f.confidence).toFixed(2)}</span>
+          <span class="tag">rule ${esc(f.rule_id ?? "none")}</span></div>
+        ${f.evidence.map(e => `<code class="ev">${esc(e)}</code>`).join("")}
+        <div class="meta">Alternatives: ${esc(f.alternatives.join("; ") || "-")}</div>
+        <div class="meta">Next tests: ${esc(f.next_tests.join("; "))}</div></div>`;
+    }).join("") || "No failures in this run.";
+  } catch (e) { box.textContent = e.message; }
+}
+
+async function loadFlaky() {
+  const box = document.getElementById("flaky");
+  try {
+    const rows = await getJSON("/flaky");
+    box.innerHTML = `<table><thead><tr><th>Test</th><th>Verdict</th><th>Runs</th>
+      <th>Fail rate</th><th>History (old to new)</th></tr></thead><tbody>` +
+      rows.map(r => `<tr><td>${esc(r.test_id)}</td>
+        <td><span class="tag ${r.verdict === "flaky" ? "bad" : ""}">${esc(r.verdict)}</span></td>
+        <td>${esc(r.runs)}</td><td>${Math.round(r.fail_rate * 100)}%</td>
+        <td><code>${esc(r.history)}</code></td></tr>`).join("") + "</tbody></table>";
+  } catch (e) { box.textContent = e.message; }
+}
+
+loadRuns(); loadFlaky();
+</script>
+</body>
+</html>

@@ -35,6 +35,9 @@ def cmd_run(stress: bool = False) -> None:
     for t in rec["tests"]:
         if t["status"] != "passed":
             print(f"  [{t['status'].upper()}] {t['name']}: {t['message']}") 
+    from rootiq.service import analyze_and_store
+    stored = analyze_and_store(rec["run_id"])
+    print(f"history: stored {stored} failure(s) for {rec['run_id']}")
 
 
 def cmd_analyze(run_id: str) -> None:

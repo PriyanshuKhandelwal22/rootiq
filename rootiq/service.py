@@ -50,3 +50,25 @@ def analyze_run(run_id: str) -> dict | None:
 
 def flaky_report() -> list[dict]:
     return [r for r in classify(load_history()) if r["verdict"] != "stable_pass"]
+
+def analyze_and_store(run_id: str) -> int:
+    """Diagnose every failure in a run and save it to the history database.
+    Returns the number of failures stored."""
+    from rootiq.storage.history import save_run
+
+    path = RUNS / f"{run_id}.json"
+    rec = json.loads(path.read_text(encoding="utf-8"))
+    evidence = rec.get("evidence", [])
+    for i, e in enumerate(evidence, 1):
+        e["id"] = f"EV{i}"
+    flows = (rec.get("network") or {}).get("flows")
+
+    failures, diagnoses = [], {}
+    for t in rec.get("tests", []):
+        if t["status"] in ("failed", "error"):
+            f = normalize_failure(t)
+            f["fingerprint"] = make_fingerprint(f)
+            failures.append(f)
+            diagnoses[f["test_id"]] = diagnose_with_evidence([f], evidence, flows)
+    save_run(rec, failures, diagnoses)
+    return len(failures)

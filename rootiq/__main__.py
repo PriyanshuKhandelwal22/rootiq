@@ -233,6 +233,12 @@ def cmd_llm(run_id: str, query: str, show: bool, no_rule: bool) -> None:
         print(f"   inference : {h['inference']}")
     print(f"\nnext_tests: {'; '.join(r['result']['next_tests'])}")
 
+def cmd_benchmark_llm(run_id: str, repeats: int, with_rule: bool,
+                      limit: int | None, score_only: bool) -> None:
+    from rootiq.rca.llm_benchmark import report, run_llm_benchmark
+    if not score_only:
+        run_llm_benchmark(run_id, repeats, with_rule, limit)
+    report(run_id, with_rule)
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="rootiq")
@@ -257,6 +263,14 @@ def main() -> None:
     l.add_argument("--show-packet", action="store_true")
     l.add_argument("--no-rule", action="store_true",
                    help="hide the rule engine's answer from the model")
+    q = sub.add_parser("benchmark-llm", help="Score the LLM reasoner on labeled failures")
+    q.add_argument("run_id")
+    q.add_argument("--repeats", type=int, default=3)
+    q.add_argument("--with-rule", action="store_true",
+                   help="show the rule engine's answer to the model (default: hidden)")
+    q.add_argument("--limit", type=int, default=None,
+                   help="make at most this many new calls, for batching")
+    q.add_argument("--score-only", action="store_true")
     args = parser.parse_args()
 
     if args.command == "run":
@@ -277,6 +291,8 @@ def main() -> None:
         cmd_benchmark_hybrid(args.run_id)
     elif args.command == "llm":
         cmd_llm(args.run_id, args.query, args.show_packet, args.no_rule)
+    elif args.command == "benchmark-llm":
+        cmd_benchmark_llm(args.run_id, args.repeats, args.with_rule,args.limit, args.score_only)
 
 if __name__ == "__main__":
     main()

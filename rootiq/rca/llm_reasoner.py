@@ -50,7 +50,8 @@ def _neighbors(test_id: str, k: int = 3, min_sim: float = 0.30) -> list[dict]:
 
 def build_packet(rec, f, evidence, flows, rule, neighbors, include_rule=True):
     """Anonymous evidence packet: no test names, only ids the model can cite."""
-    items = [{"id": "MSG", "kind": "error_message", "text": f["raw_message"][:300]}]
+    items = [{"id": "MSG", "kind": "error_message", "text": f["raw_message"][:300]},
+             {"id": "ERRTYPE", "kind": "error_type", "text": f["error_type"]}]
     for e in evidence:
         if e.get("test_id") != f["test_id"]:
             continue

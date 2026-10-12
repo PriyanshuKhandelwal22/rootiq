@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 runs/
 .pytest_cache/
+*.pcap
+*.db
+.env

@@ -19,5 +19,6 @@
   "tests.test_heldout3::test_http_401_invalid_token": {"truth": "authentication_failure", "kind": "heldout3"},
   "tests.test_heldout3::test_http_429_rate_limited": {"truth": "rate_limited", "kind": "heldout3"},
   "tests.test_heldout3::test_unresolvable_hostname": {"truth": "dns_failure", "kind": "heldout3"},
-  "tests.test_heldout3::test_server_closes_without_reply": {"truth": "connection_closed_early", "kind": "heldout3"}
+  "tests.test_heldout3::test_server_closes_without_reply": {"truth": "connection_closed_early", "kind": "heldout3"},
+  "tests.test_native::test_null_pointer_crash": {"truth": "native_memory_fault", "kind": "heldout4"}
 }

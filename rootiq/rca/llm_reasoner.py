@@ -95,11 +95,11 @@ def call_model(user_text: str, max_tokens: int = 8000):
         with urllib.request.urlopen(req, timeout=90) as r:
             data = json.loads(r.read())
     except urllib.error.HTTPError as e:
-        raise RuntimeError(f"API error {e.code}: {e.read().decode()[:300]}")
+        raise RuntimeError(f"API error {e.code}: {e.read().decode()[:1500]}")
     try:
         parts = data["candidates"][0]["content"]["parts"]
     except (KeyError, IndexError):
-        raise RuntimeError(f"no answer returned (blocked or empty): {str(data)[:300]}")
+        raise RuntimeError(f"no answer returned (blocked or empty): {str(data)[:1500]}")
     text = "".join(p.get("text", "") for p in parts)
     return text, data.get("usageMetadata", {})
 
